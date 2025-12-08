@@ -6,109 +6,67 @@ class MenuHelper
 {
     public static function getMainNavItems()
     {
-        // Get current user role (placeholder - sesuaikan dengan auth system)
         $role = auth()->check() && auth()->user() ? (auth()->user()->role ?? 'admin') : 'admin';
 
         $menu = [];
 
-        // Dashboard - semua role
+        // 1. Dashboard - semua role
         $menu[] = [
             'icon' => 'dashboard',
             'name' => 'Dashboard',
             'path' => '/',
         ];
 
-        // Data Santri - semua role kecuali asatid
-        if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
-            $menu[] = [
-                'icon' => 'user-profile',
-                'name' => 'Data Santri',
-                'subItems' => [
-                    ['name' => 'Daftar Santri', 'path' => '/santri'],
-                ],
-            ];
-
-            // Tambah menu untuk admin
-            if ($role === 'admin') {
-                $menu[count($menu) - 1]['subItems'][] = ['name' => 'Tambah Santri', 'path' => '/santri/create'];
-            }
-        }
-
-        // Absensi - semua role
+        // 2. Absensi - semua role (fitur utama)
         $menu[] = [
             'icon' => 'task',
             'name' => 'Absensi',
             'subItems' => [
-                ['name' => 'Rekap Absensi', 'path' => '/absensi'],
                 ['name' => 'Absensi Hari Ini', 'path' => '/absensi/hari-ini'],
+                ['name' => 'Rekap Absensi', 'path' => '/absensi'],
             ],
         ];
 
-        // Tahun Pelajaran - admin only
-        if ($role === 'admin') {
-            $menu[] = [
-                'icon' => 'calendar',
-                'name' => 'Tahun Pelajaran',
-                'subItems' => [
-                    ['name' => 'Daftar Tapel', 'path' => '/tapel'],
-                    ['name' => 'Tambah Tapel', 'path' => '/tapel/create'],
-                ],
-            ];
-        }
-
-        // Kegiatan - admin only
-        if ($role === 'admin') {
-            $menu[] = [
-                'icon' => 'task',
-                'name' => 'Kegiatan',
-                'subItems' => [
-                    ['name' => 'Daftar Kegiatan', 'path' => '/kegiatan'],
-                    ['name' => 'Tambah Kegiatan', 'path' => '/kegiatan/create'],
-                ],
-            ];
-        }
-
-        // Sub Kegiatan - admin dan pengasuh (akses via kegiatan)
-        if (in_array($role, ['admin', 'pengasuh'])) {
-            if ($role === 'pengasuh') {
-                $menu[] = [
-                    'icon' => 'pages',
-                    'name' => 'Sub Kegiatan',
-                    'subItems' => [
-                        ['name' => 'Lihat Kegiatan', 'path' => '/kegiatan'],
-                    ],
-                ];
+        // 3. Data Santri - semua role kecuali asatid
+        if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
+            $subItems = [['name' => 'Daftar Santri', 'path' => '/santri']];
+            if ($role === 'admin') {
+                $subItems[] = ['name' => 'Tambah Santri', 'path' => '/santri/create'];
             }
+            $menu[] = [
+                'icon' => 'user-profile',
+                'name' => 'Santri',
+                'subItems' => $subItems,
+            ];
         }
 
-        // Kamar - admin dan pengasuh
+        // 4. Kamar - admin dan pengasuh
         if (in_array($role, ['admin', 'pengasuh'])) {
+            $subItems = [['name' => 'Daftar Kamar', 'path' => '/kamar']];
+            if ($role === 'admin') {
+                $subItems[] = ['name' => 'Tambah Kamar', 'path' => '/kamar/create'];
+            }
             $menu[] = [
                 'icon' => 'pages',
                 'name' => 'Kamar',
-                'subItems' => [
-                    ['name' => 'Daftar Kamar', 'path' => '/kamar'],
-                ],
+                'subItems' => $subItems,
             ];
+        }
 
+        // 5. Kegiatan - admin dan pengasuh
+        if (in_array($role, ['admin', 'pengasuh'])) {
+            $subItems = [['name' => 'Daftar Kegiatan', 'path' => '/kegiatan']];
             if ($role === 'admin') {
-                $menu[count($menu) - 1]['subItems'][] = ['name' => 'Tambah Kamar', 'path' => '/kamar/create'];
+                $subItems[] = ['name' => 'Tambah Kegiatan', 'path' => '/kegiatan/create'];
             }
-        }
-
-        // User Management - hanya admin
-        if ($role === 'admin') {
             $menu[] = [
-                'icon' => 'user-profile',
-                'name' => 'User Management',
-                'subItems' => [
-                    ['name' => 'Daftar User', 'path' => '/user'],
-                    ['name' => 'Tambah User', 'path' => '/user/create'],
-                ],
+                'icon' => 'calendar',
+                'name' => 'Kegiatan',
+                'subItems' => $subItems,
             ];
         }
 
-        // Laporan - semua role kecuali asatid
+        // 6. Laporan - semua role kecuali asatid
         if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
             $menu[] = [
                 'icon' => 'charts',
@@ -117,6 +75,32 @@ class MenuHelper
                     ['name' => 'Laporan Absensi', 'path' => '/laporan/absensi'],
                     ['name' => 'Laporan Kegiatan', 'path' => '/laporan/kegiatan'],
                     ['name' => 'Statistik', 'path' => '/laporan/statistik'],
+                ],
+            ];
+        }
+
+        // === PENGATURAN (Admin Only) ===
+        
+        // 7. Tahun Pelajaran - admin only
+        if ($role === 'admin') {
+            $menu[] = [
+                'icon' => 'forms',
+                'name' => 'Tahun Pelajaran',
+                'subItems' => [
+                    ['name' => 'Daftar Tapel', 'path' => '/tapel'],
+                    ['name' => 'Tambah Tapel', 'path' => '/tapel/create'],
+                ],
+            ];
+        }
+
+        // 8. User Management - admin only
+        if ($role === 'admin') {
+            $menu[] = [
+                'icon' => 'users',
+                'name' => 'User',
+                'subItems' => [
+                    ['name' => 'Daftar User', 'path' => '/user'],
+                    ['name' => 'Tambah User', 'path' => '/user/create'],
                 ],
             ];
         }
@@ -160,12 +144,135 @@ class MenuHelper
 
     public static function getMenuGroups()
     {
-        return [
-            [
-                'title' => 'Menu',
-                'items' => self::getMainNavItems()
-            ],
+        $role = auth()->check() && auth()->user() ? (auth()->user()->role ?? 'admin') : 'admin';
+
+        $groups = [];
+
+        // ========== UTAMA ==========
+        $utamaItems = [];
+        
+        // Dashboard
+        $utamaItems[] = [
+            'icon' => 'dashboard',
+            'name' => 'Dashboard',
+            'path' => '/',
         ];
+
+        // Absensi
+        $utamaItems[] = [
+            'icon' => 'task',
+            'name' => 'Absensi',
+            'path' => '/absensi/hari-ini',
+        ];
+
+        $groups[] = [
+            'title' => 'Utama',
+            'items' => $utamaItems
+        ];
+
+        // ========== DATA ==========
+        if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
+            $dataItems = [];
+
+            // Santri
+            $santriSub = [['name' => 'Daftar', 'path' => '/santri']];
+            if ($role === 'admin') {
+                $santriSub[] = ['name' => 'Tambah', 'path' => '/santri/create'];
+            }
+            $dataItems[] = [
+                'icon' => 'user-profile',
+                'name' => 'Santri',
+                'subItems' => $santriSub,
+            ];
+
+            // Kamar
+            if (in_array($role, ['admin', 'pengasuh'])) {
+                $kamarSub = [['name' => 'Daftar', 'path' => '/kamar']];
+                if ($role === 'admin') {
+                    $kamarSub[] = ['name' => 'Tambah', 'path' => '/kamar/create'];
+                }
+                $dataItems[] = [
+                    'icon' => 'pages',
+                    'name' => 'Kamar',
+                    'subItems' => $kamarSub,
+                ];
+            }
+
+            if (!empty($dataItems)) {
+                $groups[] = [
+                    'title' => 'Data',
+                    'items' => $dataItems
+                ];
+            }
+        }
+
+        // ========== KEGIATAN ==========
+        if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
+            $kegiatanItems = [];
+
+            // Kegiatan
+            if (in_array($role, ['admin', 'pengasuh'])) {
+                $kegSub = [['name' => 'Daftar', 'path' => '/kegiatan']];
+                if ($role === 'admin') {
+                    $kegSub[] = ['name' => 'Tambah', 'path' => '/kegiatan/create'];
+                }
+                $kegiatanItems[] = [
+                    'icon' => 'calendar',
+                    'name' => 'Kegiatan',
+                    'subItems' => $kegSub,
+                ];
+            }
+
+            // Laporan
+            $kegiatanItems[] = [
+                'icon' => 'charts',
+                'name' => 'Laporan',
+                'subItems' => [
+                    ['name' => 'Harian', 'path' => '/laporan/harian'],
+                    ['name' => 'Bulanan', 'path' => '/laporan/bulanan'],
+                    ['name' => 'Tahun Pelajaran', 'path' => '/laporan/tahunan'],
+                ],
+            ];
+
+            if (!empty($kegiatanItems)) {
+                $groups[] = [
+                    'title' => 'Kegiatan',
+                    'items' => $kegiatanItems
+                ];
+            }
+        }
+
+        // ========== PENGATURAN (Admin Only) ==========
+        if ($role === 'admin') {
+            $settingItems = [];
+
+            // Tahun Pelajaran
+            $settingItems[] = [
+                'icon' => 'forms',
+                'name' => 'Tahun Pelajaran',
+                'subItems' => [
+                    ['name' => 'Daftar', 'path' => '/tapel'],
+                    ['name' => 'Tambah', 'path' => '/tapel/create'],
+                ],
+            ];
+
+            // User
+            $settingItems[] = [
+                'icon' => 'users',
+                'name' => 'User',
+                'subItems' => [
+                    ['name' => 'Daftar', 'path' => '/user'],
+                    ['name' => 'Tambah', 'path' => '/user/create'],
+                ],
+            ];
+
+            $groups[] = [
+                'title' => 'Pengaturan',
+                'items' => $settingItems
+            ];
+        }
+
+        return $groups;
     }
 
     public static function isActive($path)
