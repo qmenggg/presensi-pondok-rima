@@ -15,6 +15,9 @@ Route::get('/santri/qrcode/{qrCode}', [SantriController::class, 'showQRCode'])->
 // TAMBAHKAN INI - Route untuk akses QR image langsung
 Route::get('/qr-image/{filename}', [SantriController::class, 'getQRImage'])->name('santri.qr-image');
 
+// Kamar Routes
+Route::resource('kamar', \App\Http\Controllers\KamarController::class);
+
 // calender pages
 Route::get('/calendar', function () {
     return view('pages.calender', ['title' => 'Calendar']);

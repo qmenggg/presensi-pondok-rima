@@ -54,19 +54,18 @@ class MenuHelper
             ],
         ];
 
-        // Kelas & Kamar - admin dan pengasuh
+        // Kamar - admin dan pengasuh
         if (in_array($role, ['admin', 'pengasuh'])) {
             $menu[] = [
                 'icon' => 'pages',
-                'name' => 'Kelas & Kamar',
+                'name' => 'Kamar',
                 'subItems' => [
-                    ['name' => 'Daftar Kelas', 'path' => '/kelas'],
                     ['name' => 'Daftar Kamar', 'path' => '/kamar'],
                 ],
             ];
 
             if ($role === 'admin') {
-                $menu[count($menu) - 1]['subItems'][] = ['name' => 'Penempatan Santri', 'path' => '/kamar/penempatan'];
+                $menu[count($menu) - 1]['subItems'][] = ['name' => 'Tambah Kamar', 'path' => '/kamar/create'];
             }
         }
 
@@ -140,10 +139,6 @@ class MenuHelper
                 'title' => 'Menu',
                 'items' => self::getMainNavItems()
             ],
-            [
-                'title' => 'Others',
-                'items' => self::getOthersItems()
-            ]
         ];
     }
 

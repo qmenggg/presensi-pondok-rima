@@ -205,7 +205,7 @@
                         <!-- Image Upload Area -->
                         <div x-data="{
                             imagePreview: null,
-                            currentImage: '{{ $santri && ($santri->foto || ($santri->user && $santri->user->foto)) ? asset('storage/' . ($santri->foto ?? ($santri->user ? $santri->user->foto : ''))) : null }}',
+                            currentImage: '{{ $santri && ($santri->foto || ($santri->user && $santri->user->foto)) ? asset('storage/asset_santri/foto/' . ($santri->foto ?? ($santri->user ? $santri->user->foto : ''))) : null }}',
                             isDragging: false,
                             handleFileSelect(event) {
                                 const file = event.target.files[0];
@@ -306,7 +306,7 @@
                             <div class="flex items-center gap-4">
                                 <div
                                     class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-800">
-                                    <img src="{{ asset('storage/santri/qrcode/' . $santri->qr_code . '.png') }}"
+                                    <img src="{{ asset('storage/asset_santri/qrcode/' . $santri->qr_code_file) }}"
                                         alt="QR Code" class="h-32 w-32">
                                 </div>
                                 <div>
@@ -326,7 +326,7 @@
                         Batal
                     </a>
                     <button type="submit"
-                        class="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600">
+                        class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
                         {{ $santri ? 'Update' : 'Simpan' }}
                     </button>
                 </div>

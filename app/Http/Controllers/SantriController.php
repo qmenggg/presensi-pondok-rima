@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
+use Illuminate\Support\Facades\Log;
 
 class SantriController extends Controller
 {
@@ -123,6 +124,12 @@ class SantriController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Santri Store Request:', [
+            'has_file_foto' => $request->hasFile('foto'),
+            'all_data' => $request->all(),
+            'files' => $_FILES ?? [],
+        ]);
+
         $validated = $request->validate([
             'username' => 'required|string|max:50|unique:users,username',
             'password' => 'required|string|min:6',
@@ -151,7 +158,7 @@ class SantriController extends Controller
             $fotoName = null;
             if ($request->hasFile('foto')) {
                 $foto = $request->file('foto');
-                // Create filename without timestamp - just the name
+                // Ensure filename based on Name
                 $fotoName = Str::slug($validated['nama']) . '.' . $foto->extension();
                 $foto->storeAs('asset_santri/foto', $fotoName, 'public');
 
@@ -166,7 +173,22 @@ class SantriController extends Controller
             $userId = str_pad($user->id, 5, '0', STR_PAD_LEFT);
             $qrCode = 'QR-' . $tahun . $gender . $userId;
 
-            // 4. Create Santri
+            // 4. Generate QR Code Image Name based on Name
+            $namaSlug = Str::slug($validated['nama']);
+            $qrFileName = $namaSlug . '.png';
+            $qrPath = 'asset_santri/qrcode/' . $qrFileName;
+
+            // Ensure directory exists
+            $qrFolder = storage_path('app/public/asset_santri/qrcode');
+            if (!file_exists($qrFolder)) {
+                mkdir($qrFolder, 0777, true);
+            }
+
+            // Generate and Save QR Image
+            $writer = new Writer(new GDLibRenderer(200));
+            $writer->writeFile($qrCode, storage_path('app/public/' . $qrPath));
+
+            // 5. Create Santri
             $santri = Santri::create([
                 'user_id' => $user->id,
                 'kamar_id' => $validated['kamar_id'] ?? null,
@@ -174,33 +196,18 @@ class SantriController extends Controller
                 'tanggal_lahir' => $validated['tanggal_lahir'],
                 'alamat' => $validated['alamat'],
                 'nama_wali' => $validated['nama_wali'],
-                'foto' => $fotoName, // Store only the filename
+                'foto' => $fotoName,
                 'qr_code' => $qrCode,
+                'qr_code_file' => $qrFileName,
             ]);
-
-            // 5. Generate QR Code Image
-            $namaSantri = Str::slug($validated['nama']);
-            $qrFolder = storage_path('app/public/asset_santri/qrcode');
-
-            if (!file_exists($qrFolder)) {
-                mkdir($qrFolder, 0777, true);
-            }
-
-            $qrFileName = $namaSantri . '.png';
-            $qrPath = 'asset_santri/qrcode/' . $qrFileName;
-
-            $writer = new Writer(new GDLibRenderer(200));
-            $writer->writeFile($qrCode, storage_path('app/public/' . $qrPath));
-
-            // Save QR filename to database
-            $santri->update(['qr_code_file' => $qrFileName]);
 
             return redirect()->route('santri.index')
                 ->with('success', 'Santri berhasil ditambahkan.');
         } catch (\Exception $e) {
+            Log::error('Santri Create Error: ' . $e->getMessage());
             return redirect()->back()
-                ->withInput()
-                ->with('error', 'Gagal menambahkan santri: ' . $e->getMessage());
+            ->withInput()
+            ->with('error', 'Gagal menambahkan santri: ' . $e->getMessage());
         }
     }
 
@@ -246,7 +253,12 @@ class SantriController extends Controller
         ]);
 
         try {
-            // Update User
+            // Check if name changed
+            $oldName = $santri->user->nama;
+            $newName = $validated['nama'];
+            $nameChanged = $oldName !== $newName;
+
+            // Prepare User Data
             $userData = [
                 'username' => $validated['username'],
                 'nama' => $validated['nama'],
@@ -257,21 +269,53 @@ class SantriController extends Controller
                 $userData['password'] = Hash::make($validated['password']);
             }
 
-            // Handle foto upload
-            $fotoName = $santri->foto; // Get current photo filename
+            // Handle Foto
+            $fotoName = $santri->foto;
+
+            // Scenario 1: New Photo Uploaded
             if ($request->hasFile('foto')) {
-                // Delete old foto if exists
-                if ($santri->foto) {
+                // Delete old photo
+                if ($santri->foto && Storage::disk('public')->exists('asset_santri/foto/' . $santri->foto)) {
                     Storage::disk('public')->delete('asset_santri/foto/' . $santri->foto);
                 }
 
                 $foto = $request->file('foto');
-                // Create filename without timestamp - just the name
-                $fotoName = Str::slug($validated['nama']) . '.' . $foto->extension();
+                $fotoName = Str::slug($newName) . '.' . $foto->extension();
                 $foto->storeAs('asset_santri/foto', $fotoName, 'public');
+            }
+            // Scenario 2: No new photo, but Name Changed -> Rename existing photo
+            elseif ($nameChanged && $santri->foto) {
+                // Get extension from old filename
+                $ext = pathinfo($santri->foto, PATHINFO_EXTENSION);
+                $newFotoName = Str::slug($newName) . '.' . $ext;
+                
+                $oldPath = 'asset_santri/foto/' . $santri->foto;
+                $newPath = 'asset_santri/foto/' . $newFotoName;
+
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->move($oldPath, $newPath);
+                    $fotoName = $newFotoName;
+                }
+            }
+
+            if ($fotoName) {
                 $userData['foto'] = $fotoName;
             }
 
+            // Handle QR Code Rename if Name Changed
+            $qrFileName = $santri->qr_code_file;
+            if ($nameChanged && $santri->qr_code_file) {
+                 $newQrName = Str::slug($newName) . '.png';
+                 $oldQrPath = 'asset_santri/qrcode/' . $santri->qr_code_file;
+                 $newQrPath = 'asset_santri/qrcode/' . $newQrName;
+
+                 if (Storage::disk('public')->exists($oldQrPath)) {
+                     Storage::disk('public')->move($oldQrPath, $newQrPath);
+                     $qrFileName = $newQrName;
+                 }
+            }
+
+            // Update User
             $santri->user->update($userData);
 
             // Update Santri
@@ -281,7 +325,8 @@ class SantriController extends Controller
                 'tanggal_lahir' => $validated['tanggal_lahir'],
                 'alamat' => $validated['alamat'],
                 'nama_wali' => $validated['nama_wali'],
-                'foto' => $fotoName, // Update the photo filename in santris table
+                'foto' => $fotoName,
+                'qr_code_file' => $qrFileName
             ]);
 
             return redirect()->route('santri.index')
