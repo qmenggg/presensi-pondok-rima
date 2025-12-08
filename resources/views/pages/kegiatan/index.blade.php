@@ -3,17 +3,17 @@
 @section('content')
     <div class="space-y-5">
         <!-- Header -->
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">Kegiatan</h2>
+        <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">Kegiatan</h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola kegiatan pondok</p>
             </div>
             <a href="{{ route('kegiatan.create') }}"
-               class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                <span>Tambah</span>
+                <span class="hidden sm:inline">Tambah</span>
             </a>
         </div>
 

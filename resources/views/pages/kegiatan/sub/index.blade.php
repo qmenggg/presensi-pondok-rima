@@ -3,31 +3,30 @@
 @section('content')
     <div class="space-y-5">
         <!-- Header -->
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+        <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0 flex-1">
                 <nav class="flex mb-1" aria-label="Breadcrumb">
                     <ol class="inline-flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
                         <li><a href="{{ route('kegiatan.index') }}" class="hover:text-primary-600">Kegiatan</a></li>
                         <li><span class="mx-1">/</span></li>
-                        <li class="font-medium text-gray-700 dark:text-white truncate max-w-[120px] sm:max-w-none">{{ $kegiatan->nama_kegiatan }}</li>
+                        <li class="font-medium text-gray-700 dark:text-white truncate max-w-[100px] sm:max-w-none">{{ $kegiatan->nama_kegiatan }}</li>
                     </ol>
                 </nav>
-                <h2 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white/90">Sub Kegiatan</h2>
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">Sub Kegiatan</h2>
             </div>
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2 flex-shrink-0">
                 <a href="{{ route('sub-kegiatan.create', $kegiatan->id) }}"
-                   class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700 dark:bg-primary-500">
+                   class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     <span class="hidden sm:inline">Tambah</span>
                 </a>
                 <a href="{{ route('kegiatan.index') }}"
-                   class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                   class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    <span class="hidden sm:inline">Kembali</span>
                 </a>
             </div>
         </div>
