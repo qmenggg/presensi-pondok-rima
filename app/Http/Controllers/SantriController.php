@@ -158,8 +158,8 @@ class SantriController extends Controller
             $fotoName = null;
             if ($request->hasFile('foto')) {
                 $foto = $request->file('foto');
-                // Ensure filename based on Name
-                $fotoName = Str::slug($validated['nama']) . '.' . $foto->extension();
+                // Create filename with user id to prevent overwrite
+                $fotoName = Str::slug($validated['nama']) . '-' . $user->id . '.' . $foto->extension();
                 $foto->storeAs('asset_santri/foto', $fotoName, 'public');
 
                 // Update user with foto filename
@@ -198,8 +198,24 @@ class SantriController extends Controller
                 'nama_wali' => $validated['nama_wali'],
                 'foto' => $fotoName,
                 'qr_code' => $qrCode,
-                'qr_code_file' => $qrFileName,
             ]);
+
+            // 5. Generate QR Code Image
+            $namaSantri = Str::slug($validated['nama']);
+            $qrFolder = storage_path('app/public/asset_santri/qrcode');
+
+            if (!file_exists($qrFolder)) {
+                mkdir($qrFolder, 0777, true);
+            }
+
+            $qrFileName = $namaSantri . '-' . $user->id . '.png';
+            $qrPath = 'asset_santri/qrcode/' . $qrFileName;
+
+            $writer = new Writer(new GDLibRenderer(200));
+            $writer->writeFile($qrCode, storage_path('app/public/' . $qrPath));
+
+            // Save QR filename to database
+            $santri->update(['qr_code_file' => $qrFileName]);
 
             return redirect()->route('santri.index')
                 ->with('success', 'Santri berhasil ditambahkan.');
@@ -280,7 +296,8 @@ class SantriController extends Controller
                 }
 
                 $foto = $request->file('foto');
-                $fotoName = Str::slug($newName) . '.' . $foto->extension();
+                // Create filename with user id to prevent overwrite
+                $fotoName = Str::slug($validated['nama']) . '-' . $santri->user_id . '.' . $foto->extension();
                 $foto->storeAs('asset_santri/foto', $fotoName, 'public');
             }
             // Scenario 2: No new photo, but Name Changed -> Rename existing photo
