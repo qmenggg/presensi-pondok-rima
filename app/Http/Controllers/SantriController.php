@@ -151,8 +151,8 @@ class SantriController extends Controller
             $fotoName = null;
             if ($request->hasFile('foto')) {
                 $foto = $request->file('foto');
-                // Create filename without timestamp - just the name
-                $fotoName = Str::slug($validated['nama']) . '.' . $foto->extension();
+                // Create filename with user id to prevent overwrite
+                $fotoName = Str::slug($validated['nama']) . '-' . $user->id . '.' . $foto->extension();
                 $foto->storeAs('asset_santri/foto', $fotoName, 'public');
 
                 // Update user with foto filename
@@ -186,7 +186,7 @@ class SantriController extends Controller
                 mkdir($qrFolder, 0777, true);
             }
 
-            $qrFileName = $namaSantri . '.png';
+            $qrFileName = $namaSantri . '-' . $user->id . '.png';
             $qrPath = 'asset_santri/qrcode/' . $qrFileName;
 
             $writer = new Writer(new GDLibRenderer(200));
@@ -266,8 +266,8 @@ class SantriController extends Controller
                 }
 
                 $foto = $request->file('foto');
-                // Create filename without timestamp - just the name
-                $fotoName = Str::slug($validated['nama']) . '.' . $foto->extension();
+                // Create filename with user id to prevent overwrite
+                $fotoName = Str::slug($validated['nama']) . '-' . $santri->user_id . '.' . $foto->extension();
                 $foto->storeAs('asset_santri/foto', $fotoName, 'public');
                 $userData['foto'] = $fotoName;
             }
