@@ -49,6 +49,14 @@ class Santri extends Model
     }
 
     /**
+     * Get the santri's name from user.
+     */
+    public function getNamaAttribute(): string
+    {
+        return $this->user->nama ?? '-';
+    }
+
+    /**
      * Get the kamar that owns the santri.
      */
     public function kamar(): BelongsTo
