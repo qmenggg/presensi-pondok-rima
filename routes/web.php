@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TapelController;
 use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\SubKegiatanController;
+use App\Http\Controllers\AbsensiController;
 
 // ========================================
 // PUBLIC ROUTES (Guest Only)
@@ -28,6 +29,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         return view('pages.dashboard.ecommerce', ['title' => 'Dashboard']);
     })->name('dashboard');
+
+    // ========================================
+    // ABSENSI - Semua role bisa akses (filter di controller)
+    // ========================================
+    Route::get('/absensi/hari-ini', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('/absensi/{subKegiatan}/form', [AbsensiController::class, 'create'])->name('absensi.create');
+    // Route::post('/absensi/{subKegiatan}', [AbsensiController::class, 'store'])->name('absensi.store'); // Disabled manual store for now
+    Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
 
     // Santri Routes - admin, pengasuh, pengurus
     Route::middleware('role:admin,pengasuh,pengurus')->group(function () {
