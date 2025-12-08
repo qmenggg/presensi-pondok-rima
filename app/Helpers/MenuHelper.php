@@ -44,15 +44,42 @@ class MenuHelper
             ],
         ];
 
-        // Kegiatan - semua role
-        $menu[] = [
-            'icon' => 'calendar',
-            'name' => 'Kegiatan',
-            'subItems' => [
-                ['name' => 'Daftar Kegiatan', 'path' => '/kegiatan'],
-                ['name' => 'Jadwal Kegiatan', 'path' => '/kegiatan/jadwal'],
-            ],
-        ];
+        // Tahun Pelajaran - admin only
+        if ($role === 'admin') {
+            $menu[] = [
+                'icon' => 'calendar',
+                'name' => 'Tahun Pelajaran',
+                'subItems' => [
+                    ['name' => 'Daftar Tapel', 'path' => '/tapel'],
+                    ['name' => 'Tambah Tapel', 'path' => '/tapel/create'],
+                ],
+            ];
+        }
+
+        // Kegiatan - admin only
+        if ($role === 'admin') {
+            $menu[] = [
+                'icon' => 'task',
+                'name' => 'Kegiatan',
+                'subItems' => [
+                    ['name' => 'Daftar Kegiatan', 'path' => '/kegiatan'],
+                    ['name' => 'Tambah Kegiatan', 'path' => '/kegiatan/create'],
+                ],
+            ];
+        }
+
+        // Sub Kegiatan - admin dan pengasuh (akses via kegiatan)
+        if (in_array($role, ['admin', 'pengasuh'])) {
+            if ($role === 'pengasuh') {
+                $menu[] = [
+                    'icon' => 'pages',
+                    'name' => 'Sub Kegiatan',
+                    'subItems' => [
+                        ['name' => 'Lihat Kegiatan', 'path' => '/kegiatan'],
+                    ],
+                ];
+            }
+        }
 
         // Kamar - admin dan pengasuh
         if (in_array($role, ['admin', 'pengasuh'])) {
@@ -77,7 +104,6 @@ class MenuHelper
                 'subItems' => [
                     ['name' => 'Daftar User', 'path' => '/user'],
                     ['name' => 'Tambah User', 'path' => '/user/create'],
-                    ['name' => 'Role & Permission', 'path' => '/user/role'],
                 ],
             ];
         }

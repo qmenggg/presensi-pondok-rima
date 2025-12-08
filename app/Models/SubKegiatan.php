@@ -20,28 +20,12 @@ class SubKegiatan extends Model
         'kegiatan_id',
         'nama_sub_kegiatan',
         'keterangan',
-        'hari',
         'waktu_mulai',
         'waktu_selesai',
         'untuk_jenis_santri',
         'lokasi',
-        'wajib_hadir',
-        'rutin_mingguan',
         'guru_penanggung_jawab',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'wajib_hadir' => 'boolean',
-            'rutin_mingguan' => 'boolean',
-        ];
-    }
 
     /**
      * Get the kegiatan that owns the sub kegiatan.
@@ -57,6 +41,14 @@ class SubKegiatan extends Model
     public function guruPenanggungJawab(): BelongsTo
     {
         return $this->belongsTo(User::class, 'guru_penanggung_jawab');
+    }
+
+    /**
+     * Get the hari for the sub kegiatan.
+     */
+    public function subKegiatanHaris(): HasMany
+    {
+        return $this->hasMany(SubKegiatanHari::class);
     }
 
     /**
@@ -82,4 +74,13 @@ class SubKegiatan extends Model
     {
         return $this->hasMany(Presensi::class);
     }
+
+    /**
+     * Get hari names as array.
+     */
+    public function getHariArrayAttribute(): array
+    {
+        return $this->subKegiatanHaris->pluck('hari')->toArray();
+    }
 }
+

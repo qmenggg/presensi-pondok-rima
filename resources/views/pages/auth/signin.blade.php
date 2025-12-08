@@ -21,8 +21,27 @@
                     </div>
 
                     <!-- Login Form -->
-                    <form method="POST" action="">
+                    <form method="POST" action="{{ route('login') }}">
                         @csrf
+
+                        {{-- Error Messages --}}
+                        @if ($errors->any())
+                            <div class="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                <ul class="list-disc pl-4">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        {{-- Success Messages --}}
+                        @if (session('success'))
+                            <div class="mb-4 rounded-lg bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
                         <div class="space-y-4">
                             <!-- Username -->
                             <div>
@@ -33,9 +52,10 @@
                                     type="text"
                                     id="username"
                                     name="username"
+                                    value="{{ old('username') }}"
                                     required
                                     autofocus
-                                    class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+                                    class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 @error('username') border-red-500 dark:border-red-500 @enderror"
                                     placeholder="Masukkan username"
                                 />
                             </div>
