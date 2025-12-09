@@ -131,8 +131,8 @@ class SantriController extends Controller
         ]);
 
         $validated = $request->validate([
-            'username' => 'required|string|max:50|unique:users,username',
-            'password' => 'required|string|min:6',
+            'username' => 'nullable|string|max:50|unique:users,username',
+            'password' => 'nullable|string|min:6',
             'nama' => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:L,P',
             'tempat_lahir' => 'required|string|max:100',
@@ -144,11 +144,37 @@ class SantriController extends Controller
         ]);
 
         try {
+            // Auto-generate username if empty
+            $username = $validated['username'];
+            if (empty($username)) {
+                $namaParts = explode(' ', trim($validated['nama']));
+                $namaDepan = strtolower($namaParts[0] ?? 'santri');
+                
+                $kamarSlug = '';
+                if (!empty($validated['kamar_id'])) {
+                    $kamar = Kamar::find($validated['kamar_id']);
+                    if ($kamar) {
+                        $kamarSlug = '_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $kamar->nama_kamar));
+                    }
+                }
+                
+                $baseUsername = $namaDepan . $kamarSlug;
+                $username = $baseUsername;
+                $suffix = 1;
+                while (User::where('username', $username)->exists()) {
+                    $username = $baseUsername . '_' . $suffix;
+                    $suffix++;
+                }
+            }
+
+            // Default password if empty
+            $password = !empty($validated['password']) ? $validated['password'] : 'password123';
+
             // 1. Create User
             $user = User::create([
-                'username' => $validated['username'],
-                'password' => Hash::make($validated['password']),
-                'nama' => $validated['nama'],
+                'username' => $username,
+                'password' => Hash::make($password),
+                'nama' => ucwords(strtolower($validated['nama'])),
                 'jenis_kelamin' => $validated['jenis_kelamin'],
                 'role' => 'santri',
                 'aktif' => true,
@@ -192,10 +218,10 @@ class SantriController extends Controller
             $santri = Santri::create([
                 'user_id' => $user->id,
                 'kamar_id' => $validated['kamar_id'] ?? null,
-                'tempat_lahir' => $validated['tempat_lahir'],
+                'tempat_lahir' => ucwords(strtolower($validated['tempat_lahir'])),
                 'tanggal_lahir' => $validated['tanggal_lahir'],
                 'alamat' => $validated['alamat'],
-                'nama_wali' => $validated['nama_wali'],
+                'nama_wali' => ucwords(strtolower($validated['nama_wali'])),
                 'foto' => $fotoName,
                 'qr_code' => $qrCode,
             ]);
@@ -256,8 +282,6 @@ class SantriController extends Controller
     public function update(Request $request, Santri $santri)
     {
         $validated = $request->validate([
-            'username' => 'required|string|max:50|unique:users,username,' . $santri->user_id,
-            'password' => 'nullable|string|min:6',
             'nama' => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:L,P',
             'tempat_lahir' => 'required|string|max:100',
@@ -274,16 +298,18 @@ class SantriController extends Controller
             $newName = $validated['nama'];
             $nameChanged = $oldName !== $newName;
 
-            // Prepare User Data
+            // Prepare User Data (Username & Password input hidden, so we don't update them here)
             $userData = [
-                'username' => $validated['username'],
-                'nama' => $validated['nama'],
+                'nama' => ucwords(strtolower($validated['nama'])),
                 'jenis_kelamin' => $validated['jenis_kelamin'],
             ];
 
+            /* 
+            // Password update hidden from this form
             if (!empty($validated['password'])) {
                 $userData['password'] = Hash::make($validated['password']);
             }
+            */
 
             // Handle Foto
             $fotoName = $santri->foto;
@@ -338,10 +364,10 @@ class SantriController extends Controller
             // Update Santri
             $santri->update([
                 'kamar_id' => $validated['kamar_id'] ?? null,
-                'tempat_lahir' => $validated['tempat_lahir'],
+                'tempat_lahir' => ucwords(strtolower($validated['tempat_lahir'])),
                 'tanggal_lahir' => $validated['tanggal_lahir'],
                 'alamat' => $validated['alamat'],
-                'nama_wali' => $validated['nama_wali'],
+                'nama_wali' => ucwords(strtolower($validated['nama_wali'])),
                 'foto' => $fotoName,
                 'qr_code_file' => $qrFileName
             ]);
@@ -374,7 +400,16 @@ class SantriController extends Controller
                 Storage::disk('public')->delete('asset_santri/qrcode/' . $santri->qr_code_file);
             }
 
-            // Delete user (cascade will delete santri)
+            // Delete related data first to prevent foreign key constraints
+            // Using direct model queries to ensure deletion
+            \App\Models\Absensi::where('santri_id', $santri->id)->delete();
+            $santri->izins()->delete();
+            $santri->subKegiatanSantris()->delete();
+
+            // Delete Santri explicitly first
+            $santri->delete();
+
+            // Then delete User
             $santri->user->delete();
 
             return response()->json([

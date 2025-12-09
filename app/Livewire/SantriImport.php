@@ -104,13 +104,13 @@ class SantriImport extends Component
 
                 $rowData = [
                     'row' => $i + 1,
-                    'nama_lengkap' => trim($row[$indices['nama_lengkap']] ?? ''),
+                    'nama_lengkap' => ucwords(strtolower(trim($row[$indices['nama_lengkap']] ?? ''))),
                     'jenis_kelamin' => strtoupper(trim($row[$indices['jenis_kelamin']] ?? '')),
                     'nama_kamar' => trim($row[$indices['nama_kamar']] ?? ''),
-                    'tempat_lahir' => trim($row[$indices['tempat_lahir']] ?? ''),
+                    'tempat_lahir' => ucwords(strtolower(trim($row[$indices['tempat_lahir']] ?? ''))),
                     'tanggal_lahir' => $this->parseDate($row[$indices['tanggal_lahir']] ?? ''),
                     'alamat' => trim($row[$indices['alamat']] ?? ''),
-                    'nama_wali' => trim($row[$indices['nama_wali']] ?? ''),
+                    'nama_wali' => ucwords(strtolower(trim($row[$indices['nama_wali']] ?? ''))),
                     'rowErrors' => [],
                     'username' => '',
                 ];
@@ -232,7 +232,7 @@ class SantriImport extends Component
                 $username = $row['username'];
                 $suffix = 1;
                 while (User::where('username', $username)->exists()) {
-                    $username = $row['username'] . $suffix;
+                    $username = $row['username'] . '_' . $suffix;
                     $suffix++;
                 }
 

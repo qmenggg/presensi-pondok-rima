@@ -44,39 +44,48 @@
                     </div>
                 @endif
 
-                <!-- Data User -->
+                <!-- Data User (Auto Generated) -->
                 <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Data User</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Akun Pengguna</h3>
 
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <!-- Username -->
-                        <div>
-                            <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Username <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="username" name="username"
-                                value="{{ old('username', $santri && $santri->user ? $santri->user->username : '') }}"
-                                required
-                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90 dark:focus:border-primary-500">
-                            @error('username')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                    @if($santri && $santri->user)
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+                                <p class="mt-1 text-lg font-mono font-bold text-blue-700 dark:text-blue-400 select-all">
+                                    {{ $santri->user->username }}
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Password terenkripsi.
+                                </p>
+                            </div>
                         </div>
-
-                        <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Password {{ $santri ? '(kosongkan jika tidak diubah)' : '' }} <span
-                                    class="text-red-500">*</span>
-                            </label>
-                            <input type="password" id="password" name="password" {{ $santri ? '' : 'required' }}
-                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90 dark:focus:border-primary-500">
-                            @error('password')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                    @else
+                        <div class="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0 text-blue-600 dark:text-blue-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-medium text-blue-800 dark:text-blue-300">Auto Generate Credential</h4>
+                                    <p class="mt-1 text-sm text-blue-600 dark:text-blue-400">
+                                        Username akan dibuat otomatis format: <code>nama_kamar</code> (jika duplikat: <code>nama_kamar_1</code>).<br>
+                                        Password default: <code>password123</code>.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    @endif
+                </div>
 
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Biodata Santri</h3>
+                    
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <!-- Nama -->
                         <div>
