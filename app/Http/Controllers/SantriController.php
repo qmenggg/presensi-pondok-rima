@@ -463,4 +463,14 @@ class SantriController extends Controller
             'Cache-Control' => 'public, max-age=86400',
         ]);
     }
+
+    /**
+     * Display santri management page (activation & room transfer).
+     */
+    public function manajemen()
+    {
+        return view('pages.santri.manajemen', [
+            'title' => 'Manajemen Santri',
+        ]);
+    }
 }

@@ -180,6 +180,7 @@ class MenuHelper
                 $santriSub[] = ['name' => 'Tambah', 'path' => '/santri/create'];
                 $santriSub[] = ['name' => 'Download Template', 'path' => '/santri-template'];
                 $santriSub[] = ['name' => 'Import', 'path' => '/santri-import'];
+                $santriSub[] = ['name' => 'Manajemen', 'path' => '/santri-manajemen'];
             }
             $dataItems[] = [
                 'icon' => 'user-profile',

@@ -49,6 +49,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/santri-export', [\App\Http\Controllers\SantriExportController::class, 'export'])->name('santri.export');
         Route::get('/santri-template', [\App\Http\Controllers\SantriExportController::class, 'templatePage'])->name('santri.template');
         Route::get('/santri-import', [\App\Http\Controllers\SantriExportController::class, 'importPage'])->name('santri.import');
+        
+        // Manajemen Santri (Aktivasi & Pindah Kamar)
+        Route::get('/santri-manajemen', [SantriController::class, 'manajemen'])->name('santri.manajemen');
     });
 
     // Kamar Routes - admin dan pengasuh
