@@ -152,6 +152,114 @@ class LaporanController extends Controller
         return $pdf->stream('laporan-absensi-' . $tanggal . '.pdf');
     }
 
+    public function exportPdfBulanan(Request $request)
+    {
+        $bulan = $request->get('bulan', Carbon::today()->format('Y-m'));
+        $parts = explode('-', $bulan);
+        $year = $parts[0];
+        $month = $parts[1];
+        
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        
+        // Get filters
+        $filters = $this->getFilters($request);
+        
+        // Build query
+        $query = Absensi::with(['santri.user', 'santri.kamar'])
+            ->whereBetween('tanggal', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+        
+        $this->applyFilters($query, $filters);
+        
+        $absensis = $query->get();
+        
+        // Group by santri
+        $santriStats = [];
+        foreach ($absensis->groupBy('santri_id') as $santriId => $records) {
+            $santri = $records->first()->santri;
+            $total = $records->count();
+            $hadir = $records->where('status', 'hadir')->count();
+            $santriStats[] = [
+                'santri' => $santri,
+                'hadir' => $hadir,
+                'izin' => $records->where('status', 'izin')->count(),
+                'sakit' => $records->where('status', 'sakit')->count(),
+                'alfa' => $records->where('status', 'alfa')->count(),
+                'total' => $total,
+                'persentase' => $total > 0 ? round(($hadir / $total) * 100, 1) : 0,
+            ];
+        }
+        
+        // Sort by nama
+        usort($santriStats, fn($a, $b) => strcmp($a['santri']->user->nama ?? '', $b['santri']->user->nama ?? ''));
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap_bulanan', [
+            'bulan' => $startDate,
+            'santriStats' => $santriStats,
+        ]);
+        
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->stream('laporan-bulanan-' . $bulan . '.pdf');
+    }
+
+    public function exportPdfTahunan(Request $request)
+    {
+        $tapelId = $request->get('tapel_id');
+        
+        // Get active tapel if not specified
+        $tapel = $tapelId 
+            ? Tapel::find($tapelId) 
+            : Tapel::where('aktif', true)->first();
+        
+        if (!$tapel) {
+            return redirect()->back()->with('error', 'Tidak ada data Tahun Pelajaran.');
+        }
+        
+        $startDate = $tapel->tanggal_mulai;
+        $endDate = $tapel->tanggal_selesai;
+        
+        // Get filters
+        $filters = $this->getFilters($request);
+        
+        // Build query
+        $query = Absensi::with(['santri.user', 'santri.kamar'])
+            ->whereBetween('tanggal', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+        
+        $this->applyFilters($query, $filters);
+        
+        $absensis = $query->get();
+        
+        // Group by santri
+        $santriStats = [];
+        foreach ($absensis->groupBy('santri_id') as $santriId => $records) {
+            $santri = $records->first()->santri;
+            $total = $records->count();
+            $hadir = $records->where('status', 'hadir')->count();
+            $santriStats[] = [
+                'santri' => $santri,
+                'hadir' => $hadir,
+                'izin' => $records->where('status', 'izin')->count(),
+                'sakit' => $records->where('status', 'sakit')->count(),
+                'alfa' => $records->where('status', 'alfa')->count(),
+                'total' => $total,
+                'persentase' => $total > 0 ? round(($hadir / $total) * 100, 1) : 0,
+            ];
+        }
+        
+        // Sort by persentase desc for ranking
+        usort($santriStats, fn($a, $b) => $b['persentase'] <=> $a['persentase']);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap_tahunan', [
+            'tapel' => $tapel,
+            'santriStats' => $santriStats,
+        ]);
+        
+        $pdf->setPaper('A4', 'portrait');
+        
+        return $pdf->stream('laporan-tahunan-' . $tapel->nama_tapel . '.pdf');
+    }
+
     /**
      * Laporan Tahunan
      */

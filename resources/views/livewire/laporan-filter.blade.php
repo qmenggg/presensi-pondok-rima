@@ -51,10 +51,26 @@
             </div>
 
             {{-- Submit Button --}}
-            <div class="flex items-end">
-                <button type="submit" class="w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
+            {{-- Submit Button & Export --}}
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
                     Filter
                 </button>
+                <a href="{{ route($this->routeName . '.pdf', [
+                        'tanggal' => $tanggal,
+                        'bulan' => $bulan,
+                        'tapel_id' => $tapelId,
+                        'jenis_santri' => $jenisSantri,
+                        'status' => $status,
+                        'kamar_ids' => $selectedKamars,
+                        'sub_kegiatan_ids' => $selectedSubKegiatans
+                    ]) }}" 
+                   target="_blank"
+                   class="flex-1 inline-flex items-center justify-center h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                   title="Export PDF">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    PDF
+                </a>
             </div>
         </div>
 

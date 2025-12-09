@@ -11,6 +11,7 @@ use App\Http\Controllers\SubKegiatanController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\LiburController;
 use App\Http\Controllers\IzinController;
+use App\Http\Controllers\LaporanController;
 
 // ========================================
 // PUBLIC ROUTES (Guest Only)
@@ -140,8 +141,10 @@ Route::middleware('auth')->group(function () {
         return view('pages.tables.basic-tables', ['title' => 'Basic Tables']);
     })->name('basic-tables');
 
-        // Laporan PDF Export
-        Route::get('/laporan/harian/pdf', [\App\Http\Controllers\LaporanController::class, 'exportPdfHarian'])->name('laporan.harian.pdf');
+    // Laporan PDF Export
+    Route::get('/laporan/harian-pdf', [LaporanController::class, 'exportPdfHarian'])->name('laporan.harian.pdf');
+    Route::get('/laporan/bulanan-pdf', [LaporanController::class, 'exportPdfBulanan'])->name('laporan.bulanan.pdf');
+    Route::get('/laporan/tahunan-pdf', [LaporanController::class, 'exportPdfTahunan'])->name('laporan.tahunan.pdf');
 
     // Blank page
     Route::get('/blank', function () {
