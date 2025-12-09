@@ -43,6 +43,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('santri', SantriController::class);
         Route::get('/santri/qrcode/{qrCode}', [SantriController::class, 'showQRCode'])->name('santri.qrcode');
         Route::get('/qr-image/{filename}', [SantriController::class, 'getQRImage'])->name('santri.qr-image');
+        
+        // Export & Import Routes
+        Route::get('/santri-export', [\App\Http\Controllers\SantriExportController::class, 'export'])->name('santri.export');
+        Route::get('/santri-template', [\App\Http\Controllers\SantriExportController::class, 'templatePage'])->name('santri.template');
+        Route::get('/santri-import', [\App\Http\Controllers\SantriExportController::class, 'importPage'])->name('santri.import');
     });
 
     // Kamar Routes - admin dan pengasuh
@@ -134,6 +139,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/basic-tables', function () {
         return view('pages.tables.basic-tables', ['title' => 'Basic Tables']);
     })->name('basic-tables');
+
+        // Laporan PDF Export
+        Route::get('/laporan/harian/pdf', [\App\Http\Controllers\LaporanController::class, 'exportPdfHarian'])->name('laporan.harian.pdf');
 
     // Blank page
     Route::get('/blank', function () {

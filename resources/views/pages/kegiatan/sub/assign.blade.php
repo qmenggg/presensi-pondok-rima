@@ -15,7 +15,18 @@
                     </ol>
                 </nav>
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">Assign Peserta</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $subKegiatan->nama_sub_kegiatan }}</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $subKegiatan->nama_sub_kegiatan }}</p>
+                    <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                        @if($subKegiatan->untuk_jenis_santri === 'putra')
+                            bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400
+                        @elseif($subKegiatan->untuk_jenis_santri === 'putri')
+                            bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400
+                        @else
+                            bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400
+                        @endif
+                    ">{{ ucfirst($subKegiatan->untuk_jenis_santri) }}</span>
+                </div>
             </div>
             <a href="{{ route('sub-kegiatan.index', $kegiatan->id) }}"
                 class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]">

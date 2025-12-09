@@ -178,6 +178,8 @@ class MenuHelper
             $santriSub = [['name' => 'Daftar', 'path' => '/santri']];
             if ($role === 'admin') {
                 $santriSub[] = ['name' => 'Tambah', 'path' => '/santri/create'];
+                $santriSub[] = ['name' => 'Download Template', 'path' => '/santri-template'];
+                $santriSub[] = ['name' => 'Import', 'path' => '/santri-import'];
             }
             $dataItems[] = [
                 'icon' => 'user-profile',

@@ -177,10 +177,29 @@ class SubKegiatanController extends Controller
      */
     public function assign(Kegiatan $kegiatan, SubKegiatan $subKegiatan)
     {
-        $kamars = Kamar::orderBy('nama_kamar')->get();
-        $santris = Santri::with('user', 'kamar')->whereHas('user', function($q) {
-            $q->where('aktif', true);
-        })->get();
+        $jenisFilter = $subKegiatan->untuk_jenis_santri;
+        
+        // Filter kamar berdasarkan jenis santri
+        $kamarsQuery = Kamar::orderBy('nama_kamar');
+        if ($jenisFilter === 'putra') {
+            $kamarsQuery->where('jenis', 'putra');
+        } elseif ($jenisFilter === 'putri') {
+            $kamarsQuery->where('jenis', 'putri');
+        }
+        // jika campur, tidak perlu filter
+        $kamars = $kamarsQuery->get();
+        
+        // Filter santri berdasarkan jenis kelamin
+        $santrisQuery = Santri::with('user', 'kamar')
+            ->whereHas('user', function($q) use ($jenisFilter) {
+                $q->where('aktif', true);
+                if ($jenisFilter === 'putra') {
+                    $q->where('jenis_kelamin', 'L');
+                } elseif ($jenisFilter === 'putri') {
+                    $q->where('jenis_kelamin', 'P');
+                }
+            });
+        $santris = $santrisQuery->get();
         
         $assignedKamars = $subKegiatan->subKegiatanKamars()->pluck('kamar_id')->toArray();
         $assignedSantris = $subKegiatan->subKegiatanSantris()->pluck('santri_id')->toArray();
@@ -195,6 +214,7 @@ class SubKegiatanController extends Controller
             'assignedSantris' => $assignedSantris,
         ]);
     }
+
 
     /**
      * Store assign peserta.

@@ -116,6 +116,43 @@ class LaporanController extends Controller
     }
 
     /**
+     * Export PDF Laporan Harian
+     */
+    public function exportPdfHarian(Request $request)
+    {
+        $tanggal = $request->get('tanggal', date('Y-m-d'));
+        $filters = $this->getFilters($request);
+        
+        $query = Absensi::with(['santri.user', 'santri.kamar', 'pencatat'])
+            ->whereDate('created_at', $tanggal);
+        
+        $query = $this->applyFilters($query, $filters);
+        
+        $query = $query->orderBy('created_at', 'desc');
+        $logs = $query->get();
+        
+        // Handle sub kegiatan title
+        $subKegiatan = null;
+        if (!empty($filters['sub_kegiatan_ids'])) {
+            // If strictly one sub kegiatan is selected or we just want to show the first one
+            // Or fetch all selected
+            $subKegiatan = \App\Models\SubKegiatan::whereIn('id', $filters['sub_kegiatan_ids'])->get();
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap_absensi', [
+            'logs' => $logs,
+            'tanggal' => $tanggal,
+            'subKegiatanList' => $subKegiatan, // Pass as list
+            'kamar' => $filters['kamar_ids'] ?? [], // Use kamar_ids
+        ]);
+        
+        // Setup paper
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->stream('laporan-absensi-' . $tanggal . '.pdf');
+    }
+
+    /**
      * Laporan Tahunan
      */
     public function tahunan(Request $request)
@@ -232,6 +269,8 @@ class LaporanController extends Controller
         if (!empty($filters['sub_kegiatan_ids'])) {
             $query->whereIn('sub_kegiatan_id', $filters['sub_kegiatan_ids']);
         }
+        
+        return $query;
     }
 
     /**

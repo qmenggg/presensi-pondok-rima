@@ -19,72 +19,13 @@
                 {{ $error }}
             </div>
         @else
-            <!-- Filters -->
-            <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-                <form method="GET" action="{{ route('laporan.tahunan') }}">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tahun Pelajaran</label>
-                            <select name="tapel_id" class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
-                                @foreach($filterOptions['tapels'] as $t)
-                                    <option value="{{ $t->id }}" {{ $tapel->id == $t->id ? 'selected' : '' }}>{{ $t->nama_tapel }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Jenis Santri</label>
-                            <select name="jenis_santri" class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
-                                <option value="">Semua</option>
-                                <option value="putra" {{ $filters['jenis_santri'] == 'putra' ? 'selected' : '' }}>Putra</option>
-                                <option value="putri" {{ $filters['jenis_santri'] == 'putri' ? 'selected' : '' }}>Putri</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
-                            <select name="status" class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
-                                <option value="">Semua</option>
-                                <option value="hadir" {{ $filters['status'] == 'hadir' ? 'selected' : '' }}>Hadir</option>
-                                <option value="izin" {{ $filters['status'] == 'izin' ? 'selected' : '' }}>Izin</option>
-                                <option value="sakit" {{ $filters['status'] == 'sakit' ? 'selected' : '' }}>Sakit</option>
-                                <option value="alfa" {{ $filters['status'] == 'alfa' ? 'selected' : '' }}>Alfa</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
-                                Filter
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Kamar Checkboxes -->
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                        <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Kamar:</p>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($filterOptions['kamars'] as $kamar)
-                                <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm">
-                                    <input type="checkbox" name="kamar_ids[]" value="{{ $kamar->id }}" 
-                                        {{ in_array($kamar->id, $filters['kamar_ids'] ?? []) ? 'checked' : '' }} class="rounded">
-                                    <span class="text-gray-700 dark:text-gray-300">{{ $kamar->nama_kamar }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- Sub Kegiatan Checkboxes -->
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                        <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Sub Kegiatan:</p>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($filterOptions['subKegiatans'] as $subKegiatan)
-                                <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm">
-                                    <input type="checkbox" name="sub_kegiatan_ids[]" value="{{ $subKegiatan->id }}" 
-                                        {{ in_array($subKegiatan->id, $filters['sub_kegiatan_ids'] ?? []) ? 'checked' : '' }} class="rounded">
-                                    <span class="text-gray-700 dark:text-gray-300">{{ $subKegiatan->nama_sub_kegiatan }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-                </form>
-            </div>
+            <!-- Filters (Livewire Component) -->
+            @livewire('laporan-filter', [
+                'pageType' => 'tahunan',
+                'tapelId' => $tapel->id,
+                'filters' => $filters,
+                'tapels' => $filterOptions['tapels'] ?? [],
+            ])
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
