@@ -109,13 +109,10 @@
                             <select id="jenis_kelamin" name="jenis_kelamin" required
                                 class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90 dark:focus:border-primary-500">
                                 <option value="">Pilih Jenis Kelamin</option>
-                                <option value="L"
-                                    {{ old('jenis_kelamin', $santri && $santri->user ? $santri->user->jenis_kelamin : '') === 'L' ? 'selected' : '' }}>
-                                    Laki-laki</option>
-                                <option value="P"
-                                    {{ old('jenis_kelamin', $santri && $santri->user ? $santri->user->jenis_kelamin : '') === 'P' ? 'selected' : '' }}>
-                                    Perempuan</option>
+                                <option value="L" {{ old('jenis_kelamin', $santri && $santri->user ? $santri->user->jenis_kelamin : '') === 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin', $santri && $santri->user ? $santri->user->jenis_kelamin : '') === 'P' ? 'selected' : '' }}>Perempuan</option>
                             </select>
+                            <p id="gender-hint" class="mt-1 text-xs text-gray-500"></p>
                             @error('jenis_kelamin')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -123,8 +120,8 @@
                     </div>
                 </div>
 
-                <!-- Data Santri -->
-                <div class="space-y-4 border-t border-gray-200 dark:border-gray-800 pt-6">
+                <!-- Data Santri (still inside x-data scope) -->
+                <div class="space-y-4 border-t border-gray-200 dark:border-gray-800 pt-6 mt-6">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Data Santri</h3>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -194,11 +191,15 @@
                                 <option value="">Pilih Kamar</option>
                                 @foreach ($kamars as $kamar)
                                     <option value="{{ $kamar->id }}"
+                                        data-jenis="{{ $kamar->jenis }}"
                                         {{ old('kamar_id', $santri ? $santri->kamar_id : '') == $kamar->id ? 'selected' : '' }}>
                                         {{ $kamar->nama_kamar }}
                                     </option>
                                 @endforeach
                             </select>
+                            <p id="kamar-hint" class="mt-1 text-xs text-gray-500 hidden">
+                                Pilih jenis kelamin terlebih dahulu untuk memfilter kamar
+                            </p>
                             @error('kamar_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -343,3 +344,69 @@
         </x-common.component-card>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisKelaminSelect = document.getElementById('jenis_kelamin');
+    const kamarSelect = document.getElementById('kamar_id');
+    const genderHint = document.getElementById('gender-hint');
+    const kamarHint = document.getElementById('kamar-hint');
+    
+    if (!jenisKelaminSelect || !kamarSelect) return;
+    
+    // Store all options
+    const allOptions = Array.from(kamarSelect.options);
+    
+    function filterKamars() {
+        const jenisKelamin = jenisKelaminSelect.value;
+        const currentValue = kamarSelect.value;
+        
+        // Update hint
+        if (genderHint) {
+            if (jenisKelamin === 'L') {
+                genderHint.textContent = 'Akan menampilkan kamar Putra';
+            } else if (jenisKelamin === 'P') {
+                genderHint.textContent = 'Akan menampilkan kamar Putri';
+            } else {
+                genderHint.textContent = '';
+            }
+        }
+        
+        // Show/hide kamar hint
+        if (kamarHint) {
+            kamarHint.classList.toggle('hidden', jenisKelamin !== '');
+        }
+        
+        // Filter options
+        const jenisKamar = jenisKelamin === 'L' ? 'putra' : (jenisKelamin === 'P' ? 'putri' : null);
+        
+        // Clear and rebuild options
+        kamarSelect.innerHTML = '';
+        
+        allOptions.forEach(option => {
+            if (option.value === '') {
+                // Always include "Pilih Kamar" option
+                kamarSelect.appendChild(option.cloneNode(true));
+            } else if (!jenisKamar || option.dataset.jenis === jenisKamar) {
+                kamarSelect.appendChild(option.cloneNode(true));
+            }
+        });
+        
+        // Re-select if still valid
+        const validValues = Array.from(kamarSelect.options).map(o => o.value);
+        if (validValues.includes(currentValue)) {
+            kamarSelect.value = currentValue;
+        } else {
+            kamarSelect.value = '';
+        }
+    }
+    
+    // Initial filter
+    filterKamars();
+    
+    // Listen for changes
+    jenisKelaminSelect.addEventListener('change', filterKamars);
+});
+</script>
+@endpush

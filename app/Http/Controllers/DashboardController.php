@@ -47,7 +47,7 @@ class DashboardController extends Controller
             'hadir' => $absensiHariIni->where('status', 'hadir')->count(),
             'izin' => $absensiHariIni->where('status', 'izin')->count(),
             'sakit' => $absensiHariIni->where('status', 'sakit')->count(),
-            'alpha' => $absensiHariIni->where('status', 'alpha')->count(),
+            'alfa' => $absensiHariIni->where('status', 'alfa')->count(),
         ];
         
         $totalAbsensi = array_sum($stats['absensi']);
