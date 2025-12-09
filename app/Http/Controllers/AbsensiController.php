@@ -20,8 +20,28 @@ class AbsensiController extends Controller
         $tanggal = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
         $hariIni = Carbon::parse($tanggal)->locale('id')->isoFormat('dddd');
         
-        // Get sub kegiatan based on role
-        $query = SubKegiatan::with(['kegiatan', 'guruPenanggungJawab', 'subKegiatanHaris'])
+        // Get active Tapel
+        $tapelAktif = \App\Models\Tapel::getAktif();
+        
+        // If no active Tapel, show empty
+        if (!$tapelAktif) {
+            return view('pages.absensi.index', [
+                'title' => 'Absensi',
+                'subKegiatans' => collect([]),
+                'tanggal' => $tanggal,
+                'hariIni' => $hariIni,
+                'tapelAktif' => null,
+                'noTapelMessage' => 'Tidak ada tahun pelajaran aktif. Silakan aktifkan tahun pelajaran terlebih dahulu.',
+            ]);
+        }
+        
+        // Get sub kegiatan based on role AND active Tapel
+        $query = SubKegiatan::with(['kegiatan.tapel', 'guruPenanggungJawab', 'subKegiatanHaris'])
+            // Filter by active Tapel
+            ->whereHas('kegiatan', function($q) use ($tapelAktif) {
+                $q->where('tapel_id', $tapelAktif->id);
+            })
+            // Filter by hari
             ->whereHas('subKegiatanHaris', function($q) use ($hariIni) {
                 $q->where('hari', strtolower($hariIni));
             });
@@ -56,6 +76,7 @@ class AbsensiController extends Controller
             'subKegiatans' => $subKegiatans,
             'tanggal' => $tanggal,
             'hariIni' => $hariIni,
+            'tapelAktif' => $tapelAktif,
         ]);
     }
 
@@ -107,7 +128,8 @@ class AbsensiController extends Controller
             'longitude' => 'nullable|string',
         ]);
 
-        $subKegiatan = SubKegiatan::findOrFail($request->sub_kegiatan_id);
+        $subKegiatan = SubKegiatan::with(['kegiatan.tapel', 'subKegiatanHaris'])
+            ->findOrFail($request->sub_kegiatan_id);
 
         // Check permission
         if (!$this->canAccessSubKegiatan($subKegiatan)) {
@@ -117,14 +139,68 @@ class AbsensiController extends Controller
             ], 403);
         }
 
+        // ============================================
+        // VALIDASI 1: Cek Tahun Pelajaran (Tapel) Aktif
+        // ============================================
+        $tapel = $subKegiatan->kegiatan->tapel ?? null;
+        if (!$tapel || !$tapel->aktif) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tahun pelajaran tidak aktif. Absensi tidak dapat dilakukan.'
+            ], 400);
+        }
+
+        // ============================================
+        // VALIDASI 2: Cek Hari Kegiatan
+        // ============================================
+        $hariIni = Carbon::today()->locale('id')->isoFormat('dddd');
+        $hariKegiatan = $subKegiatan->subKegiatanHaris->pluck('hari')->map(fn($h) => strtolower($h))->toArray();
+        
+        if (!in_array(strtolower($hariIni), $hariKegiatan)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kegiatan ini tidak dijadwalkan hari ini (' . $hariIni . ').'
+            ], 400);
+        }
+
+        // ============================================
+        // VALIDASI 3: Cek Waktu Kegiatan (dengan toleransi)
+        // ============================================
+        $now = Carbon::now();
+        $waktuMulai = Carbon::parse($subKegiatan->waktu_mulai);
+        $waktuSelesai = Carbon::parse($subKegiatan->waktu_selesai);
+        
+        // Toleransi: 15 menit sebelum mulai, 30 menit setelah selesai
+        $waktuMulaiBatas = $waktuMulai->copy()->subMinutes(15);
+        $waktuSelesaiBatas = $waktuSelesai->copy()->addMinutes(30);
+        
+        if (!$now->between($waktuMulaiBatas, $waktuSelesaiBatas)) {
+            $jamMulai = Carbon::parse($subKegiatan->waktu_mulai)->format('H:i');
+            $jamSelesai = Carbon::parse($subKegiatan->waktu_selesai)->format('H:i');
+            return response()->json([
+                'status' => 'error',
+                'message' => "Absensi hanya bisa dilakukan pada jam {$jamMulai} - {$jamSelesai}."
+            ], 400);
+        }
+
         // Find santri by QR Code (with kamar relation)
-        $santri = Santri::with('kamar')->where('qr_code', $request->qr_code)->first();
+        $santri = Santri::with(['user', 'kamar'])->where('qr_code', $request->qr_code)->first();
 
         if (!$santri) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'QR Code tidak valid atau santri tidak ditemukan.'
             ], 404);
+        }
+
+        // ============================================
+        // VALIDASI 4: Cek Status Santri Aktif
+        // ============================================
+        if (!$santri->user || !$santri->user->aktif) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Santri tidak dalam status aktif.'
+            ], 400);
         }
 
         // Check if santri is a participant
@@ -159,9 +235,7 @@ class AbsensiController extends Controller
             [
                 'status' => 'hadir',
                 'pencatat_id' => auth()->id(),
-                // 'latitude' => $request->latitude, // Uncomment if latitude column exists
-                // 'longitude' => $request->longitude, // Uncomment if longitude column exists
-            ] // Note: keterangan is null for regular presence
+            ]
         );
 
         return response()->json([

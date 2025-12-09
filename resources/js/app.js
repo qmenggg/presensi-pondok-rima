@@ -1,5 +1,5 @@
 import './bootstrap';
-import Alpine from 'alpinejs';
+// Alpine is now provided by Livewire - do not import separately
 import ApexCharts from 'apexcharts';
 
 // flatpickr
@@ -10,12 +10,12 @@ import { Calendar } from '@fullcalendar/core';
 
 
 
-window.Alpine = Alpine;
+// Alpine is provided by Livewire, no need to set window.Alpine
 window.ApexCharts = ApexCharts;
 window.flatpickr = flatpickr;
 window.FullCalendar = Calendar;
 
-Alpine.start();
+// Alpine.start() is called by Livewire automatically
 
 // Initialize components on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

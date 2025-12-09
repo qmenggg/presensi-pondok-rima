@@ -1,125 +1,23 @@
 @extends('layouts.app')
 
 @php
-    // Placeholder untuk role
-    $role = $role ?? 'admin';
-    $today = now()->format('d F Y');
-    $totalHadir = 145;
-    $totalIzin = 12;
-    $totalSakit = 8;
-    $totalAlfa = 5;
-    $totalSantri = $totalHadir + $totalIzin + $totalSakit + $totalAlfa;
-    $persentaseKehadiran = $totalSantri > 0 ? round(($totalHadir / $totalSantri) * 100, 1) : 0;
-
-    $jadwalHariIni = [
-        [
-            'nama' => 'Sholat Subuh Berjamaah',
-            'jam_mulai' => '04:30',
-            'jam_selesai' => '05:00',
-            'lokasi' => 'Masjid',
-            'status' => 'selesai',
-        ],
-        [
-            'nama' => 'Kajian Pagi',
-            'jam_mulai' => '06:00',
-            'jam_selesai' => '07:00',
-            'lokasi' => 'Aula Utama',
-            'status' => 'selesai',
-        ],
-        [
-            'nama' => 'Pelajaran Bahasa Arab',
-            'jam_mulai' => '08:00',
-            'jam_selesai' => '09:30',
-            'lokasi' => 'Kelas A',
-            'status' => 'berlangsung',
-        ],
-        [
-            'nama' => 'Pelajaran Fiqih',
-            'jam_mulai' => '10:00',
-            'jam_selesai' => '11:30',
-            'lokasi' => 'Kelas B',
-            'status' => 'belum_mulai',
-        ],
-        [
-            'nama' => 'Sholat Dzuhur Berjamaah',
-            'jam_mulai' => '12:00',
-            'jam_selesai' => '12:30',
-            'lokasi' => 'Masjid',
-            'status' => 'belum_mulai',
-        ],
-        [
-            'nama' => 'Pelajaran Aqidah',
-            'jam_mulai' => '13:30',
-            'jam_selesai' => '15:00',
-            'lokasi' => 'Kelas C',
-            'status' => 'belum_mulai',
-        ],
-        [
-            'nama' => 'Sholat Ashar Berjamaah',
-            'jam_mulai' => '15:30',
-            'jam_selesai' => '16:00',
-            'lokasi' => 'Masjid',
-            'status' => 'belum_mulai',
-        ],
-        [
-            'nama' => 'Kajian Sore',
-            'jam_mulai' => '16:30',
-            'jam_selesai' => '17:30',
-            'lokasi' => 'Aula Utama',
-            'status' => 'belum_mulai',
-        ],
-        [
-            'nama' => 'Sholat Maghrib Berjamaah',
-            'jam_mulai' => '18:00',
-            'jam_selesai' => '18:30',
-            'lokasi' => 'Masjid',
-            'status' => 'belum_mulai',
-        ],
-        [
-            'nama' => 'Sholat Isya Berjamaah',
-            'jam_mulai' => '19:30',
-            'jam_selesai' => '20:00',
-            'lokasi' => 'Masjid',
-            'status' => 'belum_mulai',
-        ],
-    ];
-
-    $santriBermasalah = [
-        [
-            'nama' => 'Ahmad Fauzi',
-            'foto' => 'https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=ef4444&color=fff',
-            'kamar' => 'Kamar 12',
-            'status' => 'Sering Alfa',
-        ],
-        [
-            'nama' => 'Budi Santoso',
-            'foto' => 'https://ui-avatars.com/api/?name=Budi+Santoso&background=f59e0b&color=fff',
-            'kamar' => 'Kamar 8',
-            'status' => 'Izin Berturut-turut',
-        ],
-        [
-            'nama' => 'Cahyo Pratama',
-            'foto' => 'https://ui-avatars.com/api/?name=Cahyo+Pratama&background=ef4444&color=fff',
-            'kamar' => 'Kamar 15',
-            'status' => 'Tidak Hadir 3 Hari',
-        ],
-    ];
-
-    // Data chart 7 hari
-    $chartData = [
-        'labels' => ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-        'hadir' => [140, 138, 145, 142, 141, 139, 145],
-        'izin' => [10, 12, 8, 11, 12, 13, 12],
-        'sakit' => [7, 8, 9, 8, 7, 9, 8],
-        'alfa' => [3, 2, 5, 4, 3, 6, 5],
-    ];
-
-    // Pagination untuk jadwal (5 per halaman)
+    // Data dari controller
+    $totalHadir = $stats['absensi']['hadir'] ?? 0;
+    $totalIzin = $stats['absensi']['izin'] ?? 0;
+    $totalSakit = $stats['absensi']['sakit'] ?? 0;
+    $totalAlfa = $stats['absensi']['alpha'] ?? 0;
+    $totalAbsensi = $totalHadir + $totalIzin + $totalSakit + $totalAlfa;
+    $persentaseKehadiran = $stats['absensi']['persentase_hadir'] ?? 0;
+    
+    // Placeholder untuk santri bermasalah (akan diimplementasikan nanti)
+    $santriBermasalah = [];
+    
+    // Pagination untuk jadwal
     $perPage = 5;
     $currentPage = request()->get('page', 1);
-    $totalJadwal = count($jadwalHariIni);
+    $totalJadwal = $jadwalHariIni->count();
     $totalPages = ceil($totalJadwal / $perPage);
-    $jadwalPaginated = array_slice($jadwalHariIni, ($currentPage - 1) * $perPage, $perPage);
+    $jadwalPaginated = $jadwalHariIni->slice(($currentPage - 1) * $perPage, $perPage);
 @endphp
 
 @section('content')
@@ -259,41 +157,44 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($jadwalPaginated as $jadwal)
+                            @forelse ($jadwalPaginated as $jadwal)
                                 <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="px-4 py-4 sm:px-6">
                                         <p class="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                            {{ $jadwal['nama'] }}</p>
+                                            {{ $jadwal->nama_sub_kegiatan }}</p>
                                     </td>
                                     <td class="px-4 py-4 sm:px-6">
-                                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ $jadwal['jam_mulai'] }}
-                                            - {{ $jadwal['jam_selesai'] }}</p>
-                                    </td>
-                                    <td class="px-4 py-4 sm:px-6">
-                                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ $jadwal['lokasi'] }}
+                                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">
+                                            {{ \Carbon\Carbon::parse($jadwal->waktu_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($jadwal->waktu_selesai)->format('H:i') }}
                                         </p>
+                                    </td>
+                                    <td class="px-4 py-4 sm:px-6">
+                                        <p class="text-gray-500 text-theme-sm dark:text-gray-400">{{ $jadwal->kegiatan->nama_kegiatan ?? '-' }}</p>
                                     </td>
                                     <td class="px-4 py-4 sm:px-6">
                                         @php
                                             $statusClasses = [
-                                                'belum_mulai' =>
-                                                    'bg-gray-50 text-gray-700 dark:bg-gray-500/15 dark:text-gray-400',
-                                                'berlangsung' =>
-                                                    'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-500',
-                                                'selesai' =>
-                                                    'bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-500',
+                                                'belum_mulai' => 'bg-gray-50 text-gray-700 dark:bg-gray-500/15 dark:text-gray-400',
+                                                'berlangsung' => 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-500',
+                                                'selesai' => 'bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-500',
                                             ];
                                             $statusLabels = [
                                                 'belum_mulai' => 'Belum Mulai',
                                                 'berlangsung' => 'Berlangsung',
                                                 'selesai' => 'Selesai',
                                             ];
+                                            $statusKey = $jadwal->status_jadwal ?? 'belum_mulai';
                                         @endphp
-                                        <span
-                                            class="inline-block rounded-full px-2 py-0.5 text-theme-xs font-medium {{ $statusClasses[$jadwal['status']] }}">{{ $statusLabels[$jadwal['status']] }}</span>
+                                        <span class="inline-block rounded-full px-2 py-0.5 text-theme-xs font-medium {{ $statusClasses[$statusKey] }}">{{ $statusLabels[$statusKey] }}</span>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        Tidak ada jadwal kegiatan hari ini
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

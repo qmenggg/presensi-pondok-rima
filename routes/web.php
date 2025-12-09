@@ -26,15 +26,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Dashboard - semua role (kecuali santri - sudah diblok di middleware)
-    Route::get('/', function () {
-        return view('pages.dashboard.ecommerce', ['title' => 'Dashboard']);
-    })->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // ========================================
     // ABSENSI - Semua role bisa akses (filter di controller)
     // ========================================
     Route::get('/absensi/hari-ini', [AbsensiController::class, 'index'])->name('absensi.index');
-    Route::get('/absensi/{subKegiatan}/form', [AbsensiController::class, 'create'])->name('absensi.create');
+    Route::get('/absensi/{subKegiatan}/form', \App\Livewire\AbsensiScanner::class)->name('absensi.create');
     // Route::post('/absensi/{subKegiatan}', [AbsensiController::class, 'store'])->name('absensi.store'); // Disabled manual store for now
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
 

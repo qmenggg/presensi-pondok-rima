@@ -9,7 +9,7 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola tahun pelajaran pondok</p>
             </div>
             <a href="{{ route('tapel.create') }}"
-               class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 transition-colors">
+               class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -56,9 +56,20 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     {{ $tapel->tanggal_mulai ? $tapel->tanggal_mulai->format('d M Y') : '-' }} - {{ $tapel->tanggal_selesai ? $tapel->tanggal_selesai->format('d M Y') : '-' }}
                                 </p>
-                                <span class="inline-flex items-center mt-2 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                    {{ $tapel->kegiatans_count }} kegiatan
-                                </span>
+                                <div class="flex items-center gap-2 mt-2">
+                                    @if($tapel->aktif)
+                                        <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            Aktif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                            Tidak Aktif
+                                        </span>
+                                    @endif
+                                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                        {{ $tapel->kegiatans_count }} kegiatan
+                                    </span>
+                                </div>
                             </div>
                             <div class="flex items-center gap-1 ml-2">
                                 <a href="{{ route('tapel.edit', $tapel->id) }}" class="p-2 text-blue-600 rounded-lg">
@@ -94,6 +105,7 @@
                             <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 w-12">No</th>
                             <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Nama</th>
                             <th class="hidden md:table-cell px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Periode</th>
+                            <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300">Status</th>
                             <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Kegiatan</th>
                             <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300 w-20">Aksi</th>
                         </tr>
@@ -105,6 +117,19 @@
                                 <td class="px-4 py-3 font-medium text-gray-900 dark:text-white/90">{{ $tapel->nama_tapel }}</td>
                                 <td class="hidden md:table-cell px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                                     {{ $tapel->tanggal_mulai ? $tapel->tanggal_mulai->format('d M Y') : '-' }} - {{ $tapel->tanggal_selesai ? $tapel->tanggal_selesai->format('d M Y') : '-' }}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    @if($tapel->aktif)
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                                            Aktif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>
+                                            Non-Aktif
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ $tapel->kegiatans_count }}</span>
@@ -130,7 +155,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">Tidak ada data</td>
+                                <td colspan="6" class="px-4 py-8 text-center text-gray-500">Tidak ada data</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -10,9 +10,13 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 
-    <!-- Alpine.js -->
+    <!-- Alpine.js - Only enable CDN when NOT using npm run dev -->
     {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
+    
+    <!-- Hide x-cloak elements until Alpine loads -->
+    <style>[x-cloak] { display: none !important; }</style>
 
     <!-- Theme Store -->
     <script>
@@ -83,10 +87,8 @@
             const theme = savedTheme || systemTheme;
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
-                document.body.classList.add('dark', 'bg-gray-900');
             } else {
                 document.documentElement.classList.remove('dark');
-                document.body.classList.remove('dark', 'bg-gray-900');
             }
         })();
     </script>
@@ -125,7 +127,11 @@
             @include('layouts.app-header')
             <!-- app header end -->
             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-                @yield('content')
+                @hasSection('content')
+                    @yield('content')
+                @else
+                    {{ $slot ?? '' }}
+                @endif
             </div>
         </div>
 
@@ -133,6 +139,7 @@
 
 </body>
 
+@livewireScripts
 @stack('scripts')
 
 </html>

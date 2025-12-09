@@ -10,8 +10,11 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Hide x-cloak elements until Alpine loads -->
+    <style>[x-cloak] { display: none !important; }</style>
 
-    <!-- Alpine.js -->
+    <!-- Alpine.js - Only enable CDN when NOT using npm run dev -->
     {{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
 
     <!-- Theme Store -->
@@ -83,10 +86,8 @@
             const theme = savedTheme || systemTheme;
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
-                document.body.classList.add('dark', 'bg-gray-900');
             } else {
                 document.documentElement.classList.remove('dark');
-                document.body.classList.remove('dark', 'bg-gray-900');
             }
         })();
     </script>

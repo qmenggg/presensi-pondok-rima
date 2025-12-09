@@ -47,7 +47,11 @@ class TapelController extends Controller
             'nama_tapel' => 'required|string|max:50|unique:tapels,nama_tapel',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'aktif' => 'nullable|boolean',
         ]);
+
+        // Convert checkbox value to boolean
+        $validated['aktif'] = $request->boolean('aktif');
 
         try {
             Tapel::create($validated);
@@ -80,7 +84,11 @@ class TapelController extends Controller
             'nama_tapel' => 'required|string|max:50|unique:tapels,nama_tapel,' . $tapel->id,
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'aktif' => 'nullable|boolean',
         ]);
+
+        // Convert checkbox value to boolean
+        $validated['aktif'] = $request->boolean('aktif');
 
         try {
             $tapel->update($validated);

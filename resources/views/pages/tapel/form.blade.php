@@ -80,6 +80,27 @@
                             @enderror
                         </div>
                     </div>
+
+                    <!-- Status Aktif -->
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label for="aktif" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Status Aktif
+                                </label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Jika diaktifkan, tahun pelajaran lain akan otomatis menjadi non-aktif
+                                </p>
+                            </div>
+                            <label class="relative inline-flex cursor-pointer items-center">
+                                <input type="hidden" name="aktif" value="0">
+                                <input type="checkbox" id="aktif" name="aktif" value="1"
+                                    {{ old('aktif', $tapel ? $tapel->aktif : false) ? 'checked' : '' }}
+                                    class="peer sr-only">
+                                <div class="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:ring-4 peer-focus:ring-green-500/20 dark:bg-gray-700 dark:after:border-gray-600 dark:peer-checked:bg-green-500"></div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
