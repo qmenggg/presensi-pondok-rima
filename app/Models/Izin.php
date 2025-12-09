@@ -55,4 +55,24 @@ class Izin extends Model
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
     }
+
+    /**
+     * Scope for approved izin.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->whereNotNull('disetujui_oleh')->whereNull('alasan_reject');
+    }
+
+    /**
+     * Get active izin for a santri on a specific date.
+     */
+    public static function getActiveForSantri($santriId, $tanggal)
+    {
+        return self::where('santri_id', $santriId)
+            ->where('tanggal_mulai', '<=', $tanggal)
+            ->where('tanggal_selesai', '>=', $tanggal)
+            ->approved()
+            ->first();
+    }
 }

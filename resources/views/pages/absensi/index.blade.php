@@ -54,10 +54,10 @@
                             $isComplete = $sub->absensi_count >= $sub->peserta_count && $sub->peserta_count > 0;
                             $percentage = $sub->peserta_count > 0 ? round(($sub->absensi_count / $sub->peserta_count) * 100) : 0;
                         @endphp
-                        <a href="{{ route('absensi.create', ['subKegiatan' => $sub->id, 'tanggal' => $tanggal]) }}" 
-                           class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex-1 min-w-0">
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <div class="flex items-start justify-between gap-3">
+                                <a href="{{ route('absensi.create', ['subKegiatan' => $sub->id, 'tanggal' => $tanggal]) }}" 
+                                   class="flex-1 min-w-0">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium text-gray-900 dark:text-white truncate">{{ $sub->nama_sub_kegiatan }}</span>
                                         @if($isComplete)
@@ -87,12 +87,19 @@
                                             <div class="{{ $isComplete ? 'bg-green-500' : 'bg-blue-500' }} h-1.5 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
                                         </div>
                                     </div>
+                                </a>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <a href="{{ route('rekap.index', [$sub->id, $tanggal]) }}" 
+                                       class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+                                       title="Rekap Presensi">
+                                        📊 Rekap
+                                    </a>
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
                                 </div>
-                                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
                             </div>
-                        </a>
+                        </div>
                     @endforeach
                 </div>
             @endif

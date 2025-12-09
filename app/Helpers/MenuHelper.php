@@ -246,6 +246,25 @@ class MenuHelper
         if ($role === 'admin') {
             $settingItems = [];
 
+            // Hari Libur
+            $settingItems[] = [
+                'icon' => 'calendar',
+                'name' => 'Hari Libur',
+                'subItems' => [
+                    ['name' => 'Daftar', 'path' => '/libur'],
+                    ['name' => 'Tambah', 'path' => '/libur/create'],
+                ],
+            ];
+
+            // Rekap Approval
+            $settingItems[] = [
+                'icon' => 'task',
+                'name' => 'Approval Rekap',
+                'subItems' => [
+                    ['name' => 'Pending', 'path' => '/rekap/approval'],
+                ],
+            ];
+
             // Tahun Pelajaran
             $settingItems[] = [
                 'icon' => 'forms',
@@ -269,6 +288,25 @@ class MenuHelper
             $groups[] = [
                 'title' => 'Pengaturan',
                 'items' => $settingItems
+            ];
+        }
+
+        // ========== IZIN (Admin & Pengasuh) ==========
+        if (in_array($role, ['admin', 'pengasuh'])) {
+            $izinItems = [];
+
+            $izinItems[] = [
+                'icon' => 'task',
+                'name' => 'Izin Santri',
+                'subItems' => [
+                    ['name' => 'Daftar', 'path' => '/izin'],
+                    ['name' => 'Tambah', 'path' => '/izin/create'],
+                ],
+            ];
+
+            $groups[] = [
+                'title' => 'Perizinan',
+                'items' => $izinItems
             ];
         }
 

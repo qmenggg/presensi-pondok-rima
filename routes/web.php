@@ -9,6 +9,8 @@ use App\Http\Controllers\TapelController;
 use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\SubKegiatanController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\LiburController;
+use App\Http\Controllers\IzinController;
 
 // ========================================
 // PUBLIC ROUTES (Guest Only)
@@ -78,6 +80,39 @@ Route::middleware('auth')->group(function () {
         Route::delete('/kegiatan/{kegiatan}/sub/{subKegiatan}', [SubKegiatanController::class, 'destroy'])->name('sub-kegiatan.destroy');
         Route::get('/kegiatan/{kegiatan}/sub/{subKegiatan}/assign', [SubKegiatanController::class, 'assign'])->name('sub-kegiatan.assign');
         Route::post('/kegiatan/{kegiatan}/sub/{subKegiatan}/assign', [SubKegiatanController::class, 'storeAssign'])->name('sub-kegiatan.store-assign');
+    });
+
+    // ========================================
+    // IZIN & LIBUR
+    // ========================================
+
+    // Libur - admin only
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('libur', LiburController::class)->except(['show']);
+    });
+
+    // Izin - admin dan pengasuh
+    Route::middleware('role:admin,pengasuh')->group(function () {
+        Route::resource('izin', IzinController::class);
+        Route::post('/izin/{izin}/approve', [IzinController::class, 'approve'])->name('izin.approve');
+        Route::post('/izin/{izin}/reject', [IzinController::class, 'reject'])->name('izin.reject');
+    });
+
+    // Rekap - semua role
+    Route::get('/rekap/{subKegiatan}/{tanggal}', [\App\Http\Controllers\RekapController::class, 'index'])->name('rekap.index');
+    Route::post('/rekap/{subKegiatan}/{tanggal}', [\App\Http\Controllers\RekapController::class, 'finalize'])->name('rekap.finalize');
+
+    // Laporan
+    Route::get('/laporan/harian', [\App\Http\Controllers\LaporanController::class, 'harian'])->name('laporan.harian');
+    Route::get('/laporan/bulanan', [\App\Http\Controllers\LaporanController::class, 'bulanan'])->name('laporan.bulanan');
+    Route::get('/laporan/tahunan', [\App\Http\Controllers\LaporanController::class, 'tahunan'])->name('laporan.tahunan');
+
+    // Rekap Approval - Admin only
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/rekap/approval', [\App\Http\Controllers\RekapApprovalController::class, 'index'])->name('rekap.approval');
+        Route::post('/rekap/approval/{log}/approve', [\App\Http\Controllers\RekapApprovalController::class, 'approve'])->name('rekap.approval.approve');
+        Route::post('/rekap/approval/{log}/reject', [\App\Http\Controllers\RekapApprovalController::class, 'reject'])->name('rekap.approval.reject');
+        Route::post('/rekap/approval/approve-all', [\App\Http\Controllers\RekapApprovalController::class, 'approveAll'])->name('rekap.approval.approve-all');
     });
 
     // Calendar
