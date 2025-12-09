@@ -126,6 +126,10 @@
             <!-- app header start -->
             @include('layouts.app-header')
             <!-- app header end -->
+            
+            {{-- Global Toast Notifications --}}
+            <x-toast-notification />
+            
             <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
                 @hasSection('content')
                     @yield('content')

@@ -67,6 +67,36 @@ class LiburController extends Controller
             $validated['hari_rutin'] = null;
         }
 
+        // Check for overlap with existing libur (skip if rutin mingguan)
+        if (!$validated['rutin_mingguan']) {
+            $overlap = Libur::where('rutin_mingguan', false)
+                ->where(function($q) use ($validated) {
+                    $q->where('untuk_jenis_santri', $validated['untuk_jenis_santri'])
+                      ->orWhere('untuk_jenis_santri', 'semua')
+                      ->orWhere(function($q2) use ($validated) {
+                          if ($validated['untuk_jenis_santri'] === 'semua') {
+                              $q2->whereIn('untuk_jenis_santri', ['putra', 'putri', 'semua']);
+                          }
+                      });
+                })
+                ->where(function($q) use ($validated) {
+                    // Check if date ranges overlap
+                    $q->whereBetween('tanggal_mulai', [$validated['tanggal_mulai'], $validated['tanggal_selesai']])
+                      ->orWhereBetween('tanggal_selesai', [$validated['tanggal_mulai'], $validated['tanggal_selesai']])
+                      ->orWhere(function($q2) use ($validated) {
+                          $q2->where('tanggal_mulai', '<=', $validated['tanggal_mulai'])
+                             ->where('tanggal_selesai', '>=', $validated['tanggal_selesai']);
+                      });
+                })
+                ->first();
+            
+            if ($overlap) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tanggal libur overlap dengan libur yang sudah ada: ' . $overlap->keterangan . ' (' . $overlap->tanggal_mulai->format('d/m/Y') . ' - ' . $overlap->tanggal_selesai->format('d/m/Y') . ')');
+            }
+        }
+
         try {
             Libur::create($validated);
             return redirect()->route('libur.index')
@@ -108,6 +138,36 @@ class LiburController extends Controller
         
         if (!$validated['rutin_mingguan']) {
             $validated['hari_rutin'] = null;
+        }
+
+        // Check for overlap with existing libur (skip if rutin mingguan, exclude self)
+        if (!$validated['rutin_mingguan']) {
+            $overlap = Libur::where('id', '!=', $libur->id)
+                ->where('rutin_mingguan', false)
+                ->where(function($q) use ($validated) {
+                    $q->where('untuk_jenis_santri', $validated['untuk_jenis_santri'])
+                      ->orWhere('untuk_jenis_santri', 'semua')
+                      ->orWhere(function($q2) use ($validated) {
+                          if ($validated['untuk_jenis_santri'] === 'semua') {
+                              $q2->whereIn('untuk_jenis_santri', ['putra', 'putri', 'semua']);
+                          }
+                      });
+                })
+                ->where(function($q) use ($validated) {
+                    $q->whereBetween('tanggal_mulai', [$validated['tanggal_mulai'], $validated['tanggal_selesai']])
+                      ->orWhereBetween('tanggal_selesai', [$validated['tanggal_mulai'], $validated['tanggal_selesai']])
+                      ->orWhere(function($q2) use ($validated) {
+                          $q2->where('tanggal_mulai', '<=', $validated['tanggal_mulai'])
+                             ->where('tanggal_selesai', '>=', $validated['tanggal_selesai']);
+                      });
+                })
+                ->first();
+            
+            if ($overlap) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tanggal libur overlap dengan libur yang sudah ada: ' . $overlap->keterangan . ' (' . $overlap->tanggal_mulai->format('d/m/Y') . ' - ' . $overlap->tanggal_selesai->format('d/m/Y') . ')');
+            }
         }
 
         try {
