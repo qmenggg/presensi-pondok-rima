@@ -70,11 +70,11 @@
                                     </div>
                                     <div class="flex flex-wrap items-center gap-2 mt-1.5">
                                         @if($waktu)
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">🕐 {{ $waktu }}</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400"><svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> {{ $waktu }}</span>
                                         @endif
                                         <span class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">{{ $sub->kegiatan->nama_kegiatan ?? '-' }}</span>
                                         @if($sub->guruPenanggungJawab)
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">📚 {{ $sub->guruPenanggungJawab->nama }}</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400"><svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> {{ $sub->guruPenanggungJawab->nama }}</span>
                                         @endif
                                     </div>
                                     <!-- Progress Bar -->
@@ -92,7 +92,7 @@
                                     <a href="{{ route('rekap.index', [$sub->id, $tanggal]) }}" 
                                        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
                                        title="Rekap Presensi">
-                                        📊 Rekap
+                                        <svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> Rekap
                                     </a>
                                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

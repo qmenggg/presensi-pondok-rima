@@ -135,7 +135,7 @@ class SantriTemplateDataSheet implements FromArray, WithHeadings, WithStyles, Sh
 
                 // Info
                 $kamarCount = count($this->kamarList);
-                $sheet->getCell('I1')->setValue("📝 Dropdown: {$kamarCount} kamar tersedia");
+                $sheet->getCell('I1')->setValue("Dropdown: {$kamarCount} kamar tersedia");
                 $sheet->getStyle('I1')->getFont()->setBold(true)->getColor()->setRGB('059669');
                 $sheet->getColumnDimension('I')->setWidth(35);
             },

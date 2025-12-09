@@ -80,7 +80,7 @@
                                     </span>
                                     @if($libur->rutin_mingguan)
                                         <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                                            🔄 Rutin
+                                            <svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Rutin
                                         </span>
                                     @endif
                                 </div>
@@ -131,7 +131,7 @@
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-gray-900 dark:text-white/90">{{ $libur->keterangan }}</p>
                                     @if($libur->rutin_mingguan)
-                                        <span class="text-xs text-yellow-600 dark:text-yellow-400">🔄 Rutin Mingguan</span>
+                                        <span class="text-xs text-yellow-600 dark:text-yellow-400"><svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Rutin Mingguan</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">

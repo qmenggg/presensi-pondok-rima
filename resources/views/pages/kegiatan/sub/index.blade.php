@@ -83,7 +83,7 @@
                             <div class="flex-1 min-w-0">
                                 <p class="font-medium text-gray-900 dark:text-white truncate">{{ $sub->nama_sub_kegiatan }}</p>
                                 @if($sub->lokasi)
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">📍 {{ $sub->lokasi }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"><svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> {{ $sub->lokasi }}</p>
                                 @endif
                                 <div class="flex flex-wrap items-center gap-1.5 mt-2">
                                     <span class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ Str::limit($hariText, 15) }}</span>
@@ -164,7 +164,7 @@
                                 <td class="px-3 py-3">
                                     <span class="font-medium text-gray-900 dark:text-white/90">{{ $sub->nama_sub_kegiatan }}</span>
                                     @if($sub->lokasi)
-                                        <p class="text-xs text-gray-500 mt-0.5">📍 {{ $sub->lokasi }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5"><svg class="w-3 h-3 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> {{ $sub->lokasi }}</p>
                                     @endif
                                 </td>
                                 <td class="px-3 py-3">

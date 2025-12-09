@@ -87,9 +87,9 @@
                                 <div class="flex items-center gap-2 mt-1.5">
                                     <span class="px-2 py-0.5 text-[10px] font-medium rounded-full {{ $roleColor }}">{{ ucfirst($user->role) }}</span>
                                     @if($user->jenis_kelamin === 'L')
-                                        <span class="text-[10px] text-blue-600 dark:text-blue-400">♂ L</span>
+                                        <span class="text-[10px] text-blue-600 dark:text-blue-400">L</span>
                                     @elseif($user->jenis_kelamin === 'P')
-                                        <span class="text-[10px] text-pink-600 dark:text-pink-400">♀ P</span>
+                                        <span class="text-[10px] text-pink-600 dark:text-pink-400">P</span>
                                     @elseif($user->jenis_kelamin === 'ALL')
                                         <span class="text-[10px] text-purple-600 dark:text-purple-400">All</span>
                                     @endif
