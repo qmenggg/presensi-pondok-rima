@@ -36,20 +36,132 @@
                 @endif
 
                 <div class="space-y-4">
-                    <!-- Santri -->
-                    <div>
-                        <label for="santri_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <!-- Santri (Searchable Dropdown with Keyboard Navigation) -->
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        highlightIndex: 0,
+                        selected: {{ old('santri_id', $izin?->santri_id) ?? 'null' }},
+                        selectedName: '{{ old('santri_id', $izin?->santri_id) ? addslashes($santris->firstWhere('id', old('santri_id', $izin?->santri_id))?->user?->nama) . ' (' . addslashes($santris->firstWhere('id', old('santri_id', $izin?->santri_id))?->kamar?->nama_kamar) . ')' : '' }}',
+                        santris: [
+                            @foreach($santris as $santri)
+                            { id: {{ $santri->id }}, nama: '{{ addslashes($santri->user->nama ?? '-') }}', kamar: '{{ addslashes($santri->kamar->nama_kamar ?? 'Belum ada kamar') }}' },
+                            @endforeach
+                        ],
+                        get filteredSantris() {
+                            if (!this.search || this.search.trim() === '') return this.santris;
+                            const searchLower = this.search.toLowerCase().trim();
+                            return this.santris.filter(s => 
+                                s.nama.toLowerCase().includes(searchLower) ||
+                                s.kamar.toLowerCase().includes(searchLower)
+                            );
+                        },
+                        selectSantri(santri) {
+                            this.selected = santri.id;
+                            this.selectedName = santri.nama + ' (' + santri.kamar + ')';
+                            this.search = '';
+                            this.open = false;
+                            this.$refs.searchInput.blur();
+                        },
+                        selectHighlighted() {
+                            if (this.filteredSantris.length > 0 && this.highlightIndex >= 0) {
+                                this.selectSantri(this.filteredSantris[this.highlightIndex]);
+                            }
+                        },
+                        moveUp() {
+                            if (this.highlightIndex > 0) {
+                                this.highlightIndex--;
+                                this.scrollToHighlighted();
+                            }
+                        },
+                        moveDown() {
+                            if (this.highlightIndex < this.filteredSantris.length - 1) {
+                                this.highlightIndex++;
+                                this.scrollToHighlighted();
+                            }
+                        },
+                        scrollToHighlighted() {
+                            this.$nextTick(() => {
+                                const container = this.$refs.dropdown;
+                                const highlighted = container?.querySelector('[data-highlighted=true]');
+                                if (highlighted) {
+                                    highlighted.scrollIntoView({ block: 'nearest' });
+                                }
+                            });
+                        },
+                        openDropdown() {
+                            this.open = true;
+                            this.search = '';
+                            this.highlightIndex = 0;
+                        }
+                    }" class="relative" @keydown.escape="open = false">
+                        <label for="santri_search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Santri <span class="text-red-500">*</span>
                         </label>
-                        <select id="santri_id" name="santri_id" required
-                            class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
-                            <option value="">Pilih Santri</option>
-                            @foreach($santris as $santri)
-                                <option value="{{ $santri->id }}" {{ old('santri_id', $izin?->santri_id) == $santri->id ? 'selected' : '' }}>
-                                    {{ $santri->nama }}
-                                </option>
-                            @endforeach
-                        </select>
+                        
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" name="santri_id" :value="selected" required>
+                        
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="santri_search"
+                                x-ref="searchInput"
+                                x-model="search"
+                                @focus="openDropdown()"
+                                @click="openDropdown()"
+                                @input="open = true; highlightIndex = 0"
+                                @keydown.arrow-down.prevent="moveDown()"
+                                @keydown.arrow-up.prevent="moveUp()"
+                                @keydown.enter.prevent="selectHighlighted()"
+                                :placeholder="selected ? selectedName : 'Ketik untuk mencari santri...'"
+                                autocomplete="off"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pr-10 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
+                            
+                            <!-- Selected display when not searching -->
+                            <div x-show="!open && selected && !search" 
+                                 @click="openDropdown(); $refs.searchInput.focus()"
+                                 class="absolute inset-0 flex items-center px-4 cursor-pointer">
+                                <span class="text-sm text-gray-800 dark:text-white" x-text="selectedName"></span>
+                            </div>
+                            
+                            <!-- Dropdown icon -->
+                            <button type="button" @click="open ? (open = false) : openDropdown()" class="absolute inset-y-0 right-0 flex items-center px-3">
+                                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Dropdown options -->
+                        <div x-show="open" 
+                             x-transition
+                             x-ref="dropdown"
+                             @click.away="open = false"
+                             class="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                            <template x-if="filteredSantris.length === 0">
+                                <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                    Tidak ditemukan
+                                </div>
+                            </template>
+                            <template x-for="(santri, index) in filteredSantris" :key="santri.id">
+                                <button type="button"
+                                        @click="selectSantri(santri)"
+                                        @mouseenter="highlightIndex = index"
+                                        :data-highlighted="highlightIndex === index"
+                                        class="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition-colors"
+                                        :class="{
+                                            'bg-blue-100 dark:bg-blue-900/50': highlightIndex === index,
+                                            'bg-blue-50 dark:bg-blue-900/30': selected === santri.id && highlightIndex !== index,
+                                            'hover:bg-gray-100 dark:hover:bg-gray-700': highlightIndex !== index
+                                        }">
+                                    <span x-text="santri.nama" class="font-medium text-gray-800 dark:text-white"></span>
+                                    <span x-text="'(' + santri.kamar + ')'" class="text-gray-500 dark:text-gray-400 text-xs ml-2"></span>
+                                </button>
+                            </template>
+                        </div>
+                        
                         @error('santri_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror

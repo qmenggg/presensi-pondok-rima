@@ -1,6 +1,6 @@
 <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
     <form method="GET" action="{{ route($this->routeName) }}">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
             {{-- Date/Month/Tapel based on page type --}}
             @if($pageType === 'harian')
                 <div>
@@ -50,9 +50,8 @@
                 </select>
             </div>
 
-            {{-- Submit Button --}}
             {{-- Submit Button & Export --}}
-            <div class="flex items-end gap-2">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
                 <button type="submit" class="flex-1 h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">
                     Filter
                 </button>
@@ -76,7 +75,7 @@
 
         {{-- Kamar Checkboxes - Reactive --}}
         <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
                 <p class="text-xs font-medium text-gray-600 dark:text-gray-400">Kamar:</p>
                 @if($jenisSantri)
                     <span class="px-2 py-0.5 text-xs font-medium rounded-full 
@@ -93,8 +92,8 @@
             </div>
             <div class="flex flex-wrap gap-2" wire:loading.class="opacity-50" wire:target="jenisSantri">
                 @forelse($this->filteredKamars as $kamar)
-                    <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm transition-colors">
-                        <input type="checkbox" wire:model="selectedKamars" name="kamar_ids[]" value="{{ $kamar->id }}" class="rounded">
+                    <label class="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm transition-colors">
+                        <input type="checkbox" wire:model="selectedKamars" name="kamar_ids[]" value="{{ $kamar->id }}" class="rounded text-primary-600">
                         <span class="text-gray-700 dark:text-gray-300">{{ $kamar->nama_kamar }}</span>
                     </label>
                 @empty
@@ -105,7 +104,7 @@
 
         {{-- Sub Kegiatan Checkboxes - Reactive --}}
         <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
                 <p class="text-xs font-medium text-gray-600 dark:text-gray-400">Sub Kegiatan:</p>
                 @if($jenisSantri)
                     <span class="text-xs text-gray-400">(termasuk campur)</span>
@@ -119,8 +118,8 @@
             </div>
             <div class="flex flex-wrap gap-2" wire:loading.class="opacity-50" wire:target="jenisSantri">
                 @forelse($this->filteredSubKegiatans as $subKegiatan)
-                    <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm transition-colors">
-                        <input type="checkbox" wire:model="selectedSubKegiatans" name="sub_kegiatan_ids[]" value="{{ $subKegiatan->id }}" class="rounded">
+                    <label class="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm transition-colors">
+                        <input type="checkbox" wire:model="selectedSubKegiatans" name="sub_kegiatan_ids[]" value="{{ $subKegiatan->id }}" class="rounded text-primary-600">
                         <span class="text-gray-700 dark:text-gray-300">{{ $subKegiatan->nama_sub_kegiatan }}</span>
                     </label>
                 @empty

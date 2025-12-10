@@ -15,13 +15,17 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $this->requirePermission('user.read');
+        
         $query = User::whereNotIn('role', ['santri']);
         
         // Search
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->search . '%')
-                  ->orWhere('username', 'like', '%' . $request->search . '%');
+            // SECURITY: Sanitize search input to escape LIKE wildcards
+            $searchTerm = str_replace(['%', '_'], ['\%', '\_'], $request->search);
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nama', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('username', 'like', '%' . $searchTerm . '%');
             });
         }
         
@@ -38,6 +42,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->requirePermission('user.write');
+        
         return view('pages.user.form', [
             'title' => 'Tambah User',
             'user' => null,
@@ -49,6 +55,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->requirePermission('user.write');
+        
         $validated = $request->validate([
             'username' => 'required|string|max:50|unique:users,username',
             'password' => 'required|string|min:6',
@@ -99,6 +107,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $this->requirePermission('user.read');
+        
         // Don't show santri users
         if ($user->role === 'santri') {
             abort(404);
@@ -115,6 +125,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        $this->requirePermission('user.write');
+        
         // Don't edit santri users
         if ($user->role === 'santri') {
             abort(404);
@@ -131,6 +143,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->requirePermission('user.write');
+        
         // Don't update santri users
         if ($user->role === 'santri') {
             abort(404);
@@ -204,6 +218,8 @@ class UserController extends Controller
      */
     public function toggleStatus(User $user)
     {
+        $this->requirePermission('user.write');
+        
         // Don't allow toggle for santri
         if ($user->role === 'santri') {
             return redirect()->route('user.index')

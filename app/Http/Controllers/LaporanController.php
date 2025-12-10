@@ -17,6 +17,8 @@ class LaporanController extends Controller
      */
     public function harian(Request $request)
     {
+        $this->requirePermission('laporan.read');
+        
         $tanggal = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
         $tanggalCarbon = Carbon::parse($tanggal);
         
@@ -59,6 +61,8 @@ class LaporanController extends Controller
      */
     public function bulanan(Request $request)
     {
+        $this->requirePermission('laporan.read');
+        
         $bulan = $request->get('bulan', Carbon::today()->format('Y-m'));
         $parts = explode('-', $bulan);
         $year = $parts[0];
@@ -120,6 +124,8 @@ class LaporanController extends Controller
      */
     public function exportPdfHarian(Request $request)
     {
+        $this->requirePermission('laporan.export');
+        
         $tanggal = $request->get('tanggal', date('Y-m-d'));
         $filters = $this->getFilters($request);
         
@@ -154,6 +160,8 @@ class LaporanController extends Controller
 
     public function exportPdfBulanan(Request $request)
     {
+        $this->requirePermission('laporan.export');
+        
         $bulan = $request->get('bulan', Carbon::today()->format('Y-m'));
         $parts = explode('-', $bulan);
         $year = $parts[0];
@@ -205,6 +213,8 @@ class LaporanController extends Controller
 
     public function exportPdfTahunan(Request $request)
     {
+        $this->requirePermission('laporan.export');
+        
         $tapelId = $request->get('tapel_id');
         
         // Get active tapel if not specified
@@ -265,6 +275,8 @@ class LaporanController extends Controller
      */
     public function tahunan(Request $request)
     {
+        $this->requirePermission('laporan.read');
+        
         $tapelId = $request->get('tapel_id');
         
         // Get active tapel if not specified

@@ -25,22 +25,22 @@
 
         <!-- Filter -->
         <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-            <form method="GET" action="{{ route('rekap.approval') }}" class="flex flex-wrap gap-4 items-end">
-                <div>
+            <form method="GET" action="{{ route('rekap.approval') }}" class="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4 sm:items-end">
+                <div class="w-full sm:w-auto">
                     <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tanggal</label>
                     <input type="date" name="tanggal" value="{{ $tanggal }}"
-                        class="h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
+                        class="w-full sm:w-auto h-10 rounded-lg border border-gray-300 px-3 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
                 </div>
-                <button type="submit" class="h-10 rounded-lg bg-blue-600 px-4 text-white text-sm font-medium hover:bg-blue-700">
+                <button type="submit" class="w-full sm:w-auto h-10 rounded-lg bg-blue-600 px-4 text-white text-sm font-medium hover:bg-blue-700">
                     Filter
                 </button>
                 @if($pendingLogs->count() > 0)
-                    <form action="{{ route('rekap.approval.approve-all') }}" method="POST" class="inline">
+                    <form action="{{ route('rekap.approval.approve-all') }}" method="POST" class="w-full sm:w-auto inline">
                         @csrf
                         @if($tanggal)
                             <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                         @endif
-                        <button type="submit" class="h-10 rounded-lg bg-green-600 px-4 text-white text-sm font-medium hover:bg-green-700"
+                        <button type="submit" class="w-full sm:w-auto h-10 rounded-lg bg-green-600 px-4 text-white text-sm font-medium hover:bg-green-700"
                             onclick="return confirm('Setujui semua perubahan?')">
                             Setujui Semua
                         </button>
@@ -56,7 +56,60 @@
                     Menunggu Persetujuan ({{ $pendingLogs->total() }})
                 </h3>
             </div>
-            <div class="overflow-x-auto">
+
+            <!-- Mobile Card View -->
+            <div class="block sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                @forelse ($pendingLogs as $log)
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900 dark:text-white truncate">{{ $log->santri->nama ?? '-' }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $log->subKegiatan->nama_sub_kegiatan ?? '-' }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $log->tanggal->format('d M Y') }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                {{ $log->status_lama ?? '-' }}
+                            </span>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                            <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full 
+                                {{ $log->status_baru == 'hadir' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                {{ $log->status_baru == 'izin' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
+                                {{ $log->status_baru == 'sakit' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
+                                {{ $log->status_baru == 'alfa' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}">
+                                {{ $log->status_baru }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">Oleh: {{ $log->diubahOleh->nama ?? '-' }}</span>
+                            <div class="flex items-center gap-2">
+                                <form action="{{ route('rekap.approval.approve', $log->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                                        Setujui
+                                    </button>
+                                </form>
+                                <form action="{{ route('rekap.approval.reject', $log->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                        Tolak
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                        Tidak ada perubahan yang menunggu persetujuan
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">

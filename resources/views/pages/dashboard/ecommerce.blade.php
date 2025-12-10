@@ -314,7 +314,7 @@
                 <!-- Grid Container: 2 kolom di mobile, 4 kolom di web -->
                 <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <!-- Card Kelola Santri -->
-                    <a href="#"
+                    <a href="{{ route('santri.index') }}"
                         class="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-primary-500 hover:bg-primary-50 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-primary-500/10">
                         <div
                             class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 transition-transform duration-300 group-hover:scale-110 dark:bg-primary-500/20">
@@ -331,7 +331,7 @@
                     </a>
 
                     <!-- Card Kelola Kegiatan -->
-                    <a href="#"
+                    <a href="{{ route('kegiatan.index') }}"
                         class="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-primary-500 hover:bg-primary-50 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-primary-500/10">
                         <div
                             class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 transition-transform duration-300 group-hover:scale-110 dark:bg-primary-500/20">
@@ -348,7 +348,7 @@
                     </a>
 
                     <!-- Card Kelola User -->
-                    <a href="#"
+                    <a href="{{ route('user.index') }}"
                         class="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-primary-500 hover:bg-primary-50 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-primary-500/10">
                         <div
                             class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 transition-transform duration-300 group-hover:scale-110 dark:bg-primary-500/20">
@@ -365,7 +365,7 @@
                     </a>
 
                     <!-- Card Kelola Kelas/Kamar -->
-                    <a href="#"
+                    <a href="{{ route('kamar.index') }}"
                         class="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:border-primary-500 hover:bg-primary-50 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-primary-500/10">
                         <div
                             class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 transition-transform duration-300 group-hover:scale-110 dark:bg-primary-500/20">

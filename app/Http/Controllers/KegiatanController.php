@@ -13,6 +13,8 @@ class KegiatanController extends Controller
      */
     public function index(Request $request)
     {
+        $this->requirePermission('kegiatan.read');
+        
         $query = Kegiatan::with(['tapel', 'subKegiatans']);
         
         // Filter by tapel
@@ -32,6 +34,7 @@ class KegiatanController extends Controller
             'title' => 'Kegiatan',
             'kegiatans' => $kegiatans,
             'tapels' => $tapels,
+            'canWrite' => $this->hasPermission('kegiatan.write'),
         ]);
     }
 
@@ -40,6 +43,8 @@ class KegiatanController extends Controller
      */
     public function create()
     {
+        $this->requirePermission('kegiatan.write');
+        
         $tapels = Tapel::orderBy('nama_tapel', 'desc')->get();
         return view('pages.kegiatan.form', [
             'title' => 'Tambah Kegiatan',
@@ -53,6 +58,8 @@ class KegiatanController extends Controller
      */
     public function store(Request $request)
     {
+        $this->requirePermission('kegiatan.write');
+        
         $validated = $request->validate([
             'nama_kegiatan' => 'required|string|max:100',
             'keterangan' => 'nullable|string',
@@ -85,6 +92,8 @@ class KegiatanController extends Controller
      */
     public function edit(Kegiatan $kegiatan)
     {
+        $this->requirePermission('kegiatan.write');
+        
         $tapels = Tapel::orderBy('nama_tapel', 'desc')->get();
         return view('pages.kegiatan.form', [
             'title' => 'Edit Kegiatan',
@@ -98,6 +107,8 @@ class KegiatanController extends Controller
      */
     public function update(Request $request, Kegiatan $kegiatan)
     {
+        $this->requirePermission('kegiatan.write');
+        
         $validated = $request->validate([
             'nama_kegiatan' => 'required|string|max:100',
             'keterangan' => 'nullable|string',
@@ -122,6 +133,8 @@ class KegiatanController extends Controller
      */
     public function destroy(Kegiatan $kegiatan)
     {
+        $this->requirePermission('kegiatan.write');
+        
         try {
             if ($kegiatan->subKegiatans()->count() > 0) {
                 return redirect()->route('kegiatan.index')

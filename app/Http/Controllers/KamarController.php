@@ -12,6 +12,8 @@ class KamarController extends Controller
      */
     public function index(Request $request)
     {
+        $this->requirePermission('kamar.read');
+        
         $query = Kamar::withCount('santris');
         
         // Search
@@ -29,6 +31,7 @@ class KamarController extends Controller
         return view('pages.kamar.index', [
             'title' => 'Data Kamar',
             'kamars' => $kamars,
+            'canWrite' => $this->hasPermission('kamar.write'),
         ]);
     }
 
@@ -37,6 +40,8 @@ class KamarController extends Controller
      */
     public function create()
     {
+        $this->requirePermission('kamar.write');
+        
         return view('pages.kamar.form', [
             'title' => 'Tambah Kamar',
             'kamar' => null,
@@ -48,6 +53,8 @@ class KamarController extends Controller
      */
     public function store(Request $request)
     {
+        $this->requirePermission('kamar.write');
+        
         $validated = $request->validate([
             'nama_kamar' => 'required|string|max:50',
             'jenis' => 'required|in:putra,putri',
@@ -70,6 +77,8 @@ class KamarController extends Controller
      */
     public function edit(Kamar $kamar)
     {
+        $this->requirePermission('kamar.write');
+        
         return view('pages.kamar.form', [
             'title' => 'Edit Kamar',
             'kamar' => $kamar,
@@ -81,6 +90,8 @@ class KamarController extends Controller
      */
     public function update(Request $request, Kamar $kamar)
     {
+        $this->requirePermission('kamar.write');
+        
         $validated = $request->validate([
             'nama_kamar' => 'required|string|max:50',
             'jenis' => 'required|in:putra,putri',
@@ -103,6 +114,8 @@ class KamarController extends Controller
      */
     public function destroy(Kamar $kamar)
     {
+        $this->requirePermission('kamar.write');
+        
         try {
             if ($kamar->santris()->count() > 0) {
                 return redirect()->route('kamar.index')

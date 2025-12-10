@@ -143,6 +143,20 @@ class SantriController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
+        // SECURITY: Validate gender matches kamar type
+        if (!empty($validated['kamar_id'])) {
+            $kamar = Kamar::find($validated['kamar_id']);
+            if ($kamar) {
+                $genderMismatch = ($validated['jenis_kelamin'] === 'L' && $kamar->jenis !== 'putra') ||
+                                  ($validated['jenis_kelamin'] === 'P' && $kamar->jenis !== 'putri');
+                if ($genderMismatch) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Jenis kelamin santri tidak sesuai dengan jenis kamar.');
+                }
+            }
+        }
+
         try {
             // Auto-generate username if empty
             $username = $validated['username'];
@@ -291,6 +305,20 @@ class SantriController extends Controller
             'kamar_id' => 'nullable|exists:kamars,id',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        // SECURITY: Validate gender matches kamar type
+        if (!empty($validated['kamar_id'])) {
+            $kamar = Kamar::find($validated['kamar_id']);
+            if ($kamar) {
+                $genderMismatch = ($validated['jenis_kelamin'] === 'L' && $kamar->jenis !== 'putra') ||
+                                  ($validated['jenis_kelamin'] === 'P' && $kamar->jenis !== 'putri');
+                if ($genderMismatch) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', 'Jenis kelamin santri tidak sesuai dengan jenis kamar.');
+                }
+            }
+        }
 
         try {
             // Check if name changed
@@ -472,5 +500,98 @@ class SantriController extends Controller
         return view('pages.santri.manajemen', [
             'title' => 'Manajemen Santri',
         ]);
+    }
+
+    /**
+     * Display QR Download page with kamar selection.
+     */
+    public function qrDownloadPage()
+    {
+        $kamarPutra = Kamar::where('jenis', 'putra')
+            ->withCount(['santris' => function($q) {
+                $q->whereNotNull('qr_code_file')
+                  ->whereHas('user', fn($u) => $u->where('aktif', true));
+            }])
+            ->orderBy('nama_kamar')
+            ->get();
+
+        $kamarPutri = Kamar::where('jenis', 'putri')
+            ->withCount(['santris' => function($q) {
+                $q->whereNotNull('qr_code_file')
+                  ->whereHas('user', fn($u) => $u->where('aktif', true));
+            }])
+            ->orderBy('nama_kamar')
+            ->get();
+
+        return view('pages.santri.qr-download', [
+            'title' => 'Download QR Code Santri',
+            'kamarPutra' => $kamarPutra,
+            'kamarPutri' => $kamarPutri,
+        ]);
+    }
+
+    /**
+     * Download QR codes as ZIP file, organized by kamar.
+     */
+    public function downloadQRCodes(Request $request)
+    {
+        $validated = $request->validate([
+            'kamar_ids' => 'required|array|min:1',
+            'kamar_ids.*' => 'exists:kamars,id',
+        ]);
+
+        $kamarIds = $validated['kamar_ids'];
+
+        // Get santris with QR codes from selected kamars
+        $santris = Santri::with(['user', 'kamar'])
+            ->whereIn('kamar_id', $kamarIds)
+            ->whereNotNull('qr_code_file')
+            ->whereHas('user', fn($q) => $q->where('aktif', true))
+            ->get();
+
+        if ($santris->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada QR code yang tersedia untuk kamar yang dipilih.');
+        }
+
+        // Create ZIP file
+        $zipFileName = 'qr_codes_' . date('Y-m-d_His') . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipFileName);
+
+        // Ensure temp directory exists
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0777, true);
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return redirect()->back()->with('error', 'Gagal membuat file ZIP.');
+        }
+
+        $addedCount = 0;
+        foreach ($santris as $santri) {
+            $qrFilePath = storage_path('app/public/asset_santri/qrcode/' . $santri->qr_code_file);
+            
+            if (file_exists($qrFilePath)) {
+                // Create folder structure: KamarName/SantriName.png
+                $kamarName = Str::slug($santri->kamar->nama_kamar ?? 'Tanpa-Kamar');
+                $santriName = Str::slug($santri->user->nama ?? 'Unknown');
+                $extension = pathinfo($santri->qr_code_file, PATHINFO_EXTENSION);
+                
+                $zipEntryName = $kamarName . '/' . $santriName . '.' . $extension;
+                
+                $zip->addFile($qrFilePath, $zipEntryName);
+                $addedCount++;
+            }
+        }
+
+        $zip->close();
+
+        if ($addedCount === 0) {
+            unlink($zipPath);
+            return redirect()->back()->with('error', 'Tidak ada file QR code yang ditemukan.');
+        }
+
+        // Return download response and delete file after
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 }

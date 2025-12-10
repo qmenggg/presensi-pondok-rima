@@ -104,9 +104,9 @@
                 $dateString = $dayName . ', ' . $now->isoFormat('D MMMM Y');
             @endphp
             <p>Kajen, {{ $dateString }}</p>
-            <p class="jabatan">Pengasuh</p>
-            <div class="ttd-space"></div>
-            <p class="nama">(_______________________)</p>
+            <p style="margin-bottom: 60px;">Mengetahui,</p>
+            <p style="font-weight: bold; text-decoration: underline;">................................................</p>
+            <p style="font-weight: bold;">Ketua Pondok</p>
         </div>
     </div>
 @endsection

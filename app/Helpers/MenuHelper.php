@@ -151,19 +151,32 @@ class MenuHelper
         // ========== UTAMA ==========
         $utamaItems = [];
         
-        // Dashboard
+        // Dashboard - Direct link
         $utamaItems[] = [
             'icon' => 'dashboard',
             'name' => 'Dashboard',
             'path' => '/',
         ];
 
-        // Absensi
+        // Absensi - Direct link
         $utamaItems[] = [
             'icon' => 'task',
             'name' => 'Absensi',
             'path' => '/absensi/hari-ini',
         ];
+
+        // Laporan - Dropdown (sering diakses)
+        if (in_array($role, ['admin', 'pengasuh'])) {
+            $utamaItems[] = [
+                'icon' => 'charts',
+                'name' => 'Laporan',
+                'subItems' => [
+                    ['name' => 'Harian', 'path' => '/laporan/harian'],
+                    ['name' => 'Bulanan', 'path' => '/laporan/bulanan'],
+                    ['name' => 'Tahunan', 'path' => '/laporan/tahunan'],
+                ],
+            ];
+        }
 
         $groups[] = [
             'title' => 'Utama',
@@ -174,10 +187,11 @@ class MenuHelper
         if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
             $dataItems = [];
 
-            // Santri
+            // Santri - Simplified submenu
             $santriSub = [['name' => 'Daftar', 'path' => '/santri']];
             if ($role === 'admin') {
                 $santriSub[] = ['name' => 'Tambah', 'path' => '/santri/create'];
+                $santriSub[] = ['name' => 'Download QR', 'path' => '/santri-qr-download', 'new' => true];
                 $santriSub[] = ['name' => 'Download Template', 'path' => '/santri-template'];
                 $santriSub[] = ['name' => 'Import', 'path' => '/santri-import'];
                 $santriSub[] = ['name' => 'Manajemen', 'path' => '/santri-manajemen'];
@@ -188,97 +202,78 @@ class MenuHelper
                 'subItems' => $santriSub,
             ];
 
-            // Kamar
+            // Kamar - Direct link (simplified)
             if (in_array($role, ['admin', 'pengasuh'])) {
-                $kamarSub = [['name' => 'Daftar', 'path' => '/kamar']];
-                if ($role === 'admin') {
-                    $kamarSub[] = ['name' => 'Tambah', 'path' => '/kamar/create'];
-                }
                 $dataItems[] = [
                     'icon' => 'pages',
                     'name' => 'Kamar',
-                    'subItems' => $kamarSub,
+                    'path' => '/kamar',
                 ];
             }
 
-            if (!empty($dataItems)) {
-                $groups[] = [
-                    'title' => 'Data',
-                    'items' => $dataItems
-                ];
+            // Izin Santri - Moved here for better flow
+            $izinSub = [['name' => 'Daftar', 'path' => '/izin']];
+            if ($role === 'admin' || $role === 'pengurus') {
+                $izinSub[] = ['name' => 'Tambah', 'path' => '/izin/create'];
             }
+            $dataItems[] = [
+                'icon' => 'forms',
+                'name' => 'Izin Santri',
+                'subItems' => $izinSub,
+            ];
+
+            $groups[] = [
+                'title' => 'Data',
+                'items' => $dataItems
+            ];
         }
 
-        // ========== KEGIATAN ==========
-        if (in_array($role, ['admin', 'pengasuh', 'pengurus'])) {
+        // ========== KEGIATAN (Admin & Pengasuh) ==========
+        if (in_array($role, ['admin', 'pengasuh'])) {
             $kegiatanItems = [];
 
             // Kegiatan
-            if (in_array($role, ['admin', 'pengasuh'])) {
-                $kegSub = [['name' => 'Daftar', 'path' => '/kegiatan']];
-                if ($role === 'admin') {
-                    $kegSub[] = ['name' => 'Tambah', 'path' => '/kegiatan/create'];
-                }
-                $kegiatanItems[] = [
-                    'icon' => 'calendar',
-                    'name' => 'Kegiatan',
-                    'subItems' => $kegSub,
-                ];
+            $kegSub = [['name' => 'Daftar', 'path' => '/kegiatan']];
+            if ($role === 'admin') {
+                $kegSub[] = ['name' => 'Tambah', 'path' => '/kegiatan/create'];
             }
-
-            // Laporan
             $kegiatanItems[] = [
-                'icon' => 'charts',
-                'name' => 'Laporan',
-                'subItems' => [
-                    ['name' => 'Harian', 'path' => '/laporan/harian'],
-                    ['name' => 'Bulanan', 'path' => '/laporan/bulanan'],
-                    ['name' => 'Tahun Pelajaran', 'path' => '/laporan/tahunan'],
-                ],
+                'icon' => 'calendar',
+                'name' => 'Kegiatan',
+                'subItems' => $kegSub,
             ];
 
-            if (!empty($kegiatanItems)) {
-                $groups[] = [
-                    'title' => 'Kegiatan',
-                    'items' => $kegiatanItems
+            // Tahun Pelajaran
+            $tapelSub = [['name' => 'Daftar', 'path' => '/tapel']];
+            if ($role === 'admin') {
+                $tapelSub[] = ['name' => 'Tambah', 'path' => '/tapel/create'];
+            }
+            $kegiatanItems[] = [
+                'icon' => 'forms',
+                'name' => 'Tahun Pelajaran',
+                'subItems' => $tapelSub,
+            ];
+
+            // Hari Libur (Admin only)
+            if ($role === 'admin') {
+                $kegiatanItems[] = [
+                    'icon' => 'calendar',
+                    'name' => 'Hari Libur',
+                    'path' => '/libur',
                 ];
             }
+
+            $groups[] = [
+                'title' => 'Kegiatan',
+                'items' => $kegiatanItems
+            ];
         }
 
         // ========== PENGATURAN (Admin Only) ==========
         if ($role === 'admin') {
             $settingItems = [];
 
-            // Hari Libur
-            $settingItems[] = [
-                'icon' => 'calendar',
-                'name' => 'Hari Libur',
-                'subItems' => [
-                    ['name' => 'Daftar', 'path' => '/libur'],
-                    ['name' => 'Tambah', 'path' => '/libur/create'],
-                ],
-            ];
-
-            // Rekap Approval
-            $settingItems[] = [
-                'icon' => 'task',
-                'name' => 'Approval Rekap',
-                'subItems' => [
-                    ['name' => 'Pending', 'path' => '/rekap/approval'],
-                ],
-            ];
-
-            // Tahun Pelajaran
-            $settingItems[] = [
-                'icon' => 'forms',
-                'name' => 'Tahun Pelajaran',
-                'subItems' => [
-                    ['name' => 'Daftar', 'path' => '/tapel'],
-                    ['name' => 'Tambah', 'path' => '/tapel/create'],
-                ],
-            ];
-
-            // User
+            // User Management
             $settingItems[] = [
                 'icon' => 'users',
                 'name' => 'User',
@@ -288,28 +283,16 @@ class MenuHelper
                 ],
             ];
 
+            // Approval Rekap - Direct link
+            $settingItems[] = [
+                'icon' => 'task',
+                'name' => 'Approval Rekap',
+                'path' => '/rekap/approval',
+            ];
+
             $groups[] = [
                 'title' => 'Pengaturan',
                 'items' => $settingItems
-            ];
-        }
-
-        // ========== IZIN (Admin & Pengasuh) ==========
-        if (in_array($role, ['admin', 'pengasuh'])) {
-            $izinItems = [];
-
-            $izinItems[] = [
-                'icon' => 'task',
-                'name' => 'Izin Santri',
-                'subItems' => [
-                    ['name' => 'Daftar', 'path' => '/izin'],
-                    ['name' => 'Tambah', 'path' => '/izin/create'],
-                ],
-            ];
-
-            $groups[] = [
-                'title' => 'Perizinan',
-                'items' => $izinItems
             ];
         }
 

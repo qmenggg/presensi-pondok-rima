@@ -22,10 +22,15 @@ class User extends Authenticatable
         'password',
         'nama',
         'jenis_kelamin',
-        'role',
         'aktif',
         'foto',
     ];
+
+    /**
+     * The attributes that should be protected from mass assignment.
+     * Role must be set explicitly to prevent privilege escalation.
+     */
+    protected $guarded = ['role'];
 
     /**
      * The attributes that should be hidden for serialization.

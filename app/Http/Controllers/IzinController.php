@@ -14,12 +14,16 @@ class IzinController extends Controller
      */
     public function index(Request $request)
     {
+        $this->requirePermission('izin.read');
+        
         $query = Izin::with(['santri.user', 'disetujuiOleh']);
         
         // Search by nama santri
         if ($request->filled('search')) {
-            $query->whereHas('santri.user', function($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->search . '%');
+            // SECURITY: Sanitize search input to escape LIKE wildcards
+            $searchTerm = str_replace(['%', '_'], ['\%', '\_'], $request->search);
+            $query->whereHas('santri.user', function($q) use ($searchTerm) {
+                $q->where('nama', 'like', '%' . $searchTerm . '%');
             });
         }
         
@@ -44,6 +48,8 @@ class IzinController extends Controller
         return view('pages.izin.index', [
             'title' => 'Izin Santri',
             'izins' => $izins,
+            'canWrite' => $this->hasPermission('izin.write'),
+            'canApprove' => $this->hasPermission('izin.approve'),
         ]);
     }
 
@@ -52,6 +58,8 @@ class IzinController extends Controller
      */
     public function create()
     {
+        $this->requirePermission('izin.write');
+        
         $santris = Santri::with('user')
             ->whereHas('user', function($q) {
                 $q->where('aktif', true);
@@ -71,6 +79,8 @@ class IzinController extends Controller
      */
     public function store(Request $request)
     {
+        $this->requirePermission('izin.write');
+        
         $validated = $request->validate([
             'santri_id' => 'required|exists:santris,id',
             'tanggal_mulai' => 'required|date',
@@ -95,6 +105,8 @@ class IzinController extends Controller
      */
     public function show(Izin $izin)
     {
+        $this->requirePermission('izin.read');
+        
         $izin->load(['santri.user', 'santri.kamar', 'disetujuiOleh']);
         
         return view('pages.izin.show', [
@@ -108,6 +120,8 @@ class IzinController extends Controller
      */
     public function edit(Izin $izin)
     {
+        $this->requirePermission('izin.write');
+        
         // Only allow editing pending izin
         if ($izin->disetujui_oleh) {
             return redirect()->route('izin.index')
@@ -133,6 +147,8 @@ class IzinController extends Controller
      */
     public function update(Request $request, Izin $izin)
     {
+        $this->requirePermission('izin.write');
+        
         // Only allow updating pending izin
         if ($izin->disetujui_oleh) {
             return redirect()->route('izin.index')
@@ -163,6 +179,8 @@ class IzinController extends Controller
      */
     public function destroy(Izin $izin)
     {
+        $this->requirePermission('izin.write');
+        
         // Only allow deleting pending izin
         if ($izin->disetujui_oleh) {
             return redirect()->route('izin.index')
@@ -184,6 +202,8 @@ class IzinController extends Controller
      */
     public function approve(Izin $izin)
     {
+        $this->requirePermission('izin.approve');
+        
         if ($izin->disetujui_oleh) {
             return redirect()->route('izin.index')
                 ->with('error', 'Izin sudah diproses sebelumnya.');
@@ -209,6 +229,8 @@ class IzinController extends Controller
      */
     public function reject(Request $request, Izin $izin)
     {
+        $this->requirePermission('izin.approve');
+        
         if ($izin->disetujui_oleh && !$izin->alasan_reject) {
             return redirect()->route('izin.index')
                 ->with('error', 'Izin yang sudah disetujui tidak dapat ditolak.');
@@ -233,16 +255,5 @@ class IzinController extends Controller
         }
     }
 
-    /**
-     * Get active izin for a santri on a specific date.
-     */
-    public static function getActiveForSantri($santriId, $tanggal)
-    {
-        return Izin::where('santri_id', $santriId)
-            ->where('tanggal_mulai', '<=', $tanggal)
-            ->where('tanggal_selesai', '>=', $tanggal)
-            ->whereNotNull('disetujui_oleh')
-            ->whereNull('alasan_reject')
-            ->first();
-    }
+    // NOTE: getActiveForSantri() method moved to Izin Model (see app/Models/Izin.php)
 }

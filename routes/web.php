@@ -39,11 +39,21 @@ Route::middleware('auth')->group(function () {
     // Route::post('/absensi/{subKegiatan}', [AbsensiController::class, 'store'])->name('absensi.store'); // Disabled manual store for now
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
 
-    // Santri Routes - admin, pengasuh, pengurus
+    // Santri Routes - Read access for admin, pengasuh, pengurus
     Route::middleware('role:admin,pengasuh,pengurus')->group(function () {
-        Route::resource('santri', SantriController::class);
+        Route::get('/santri', [SantriController::class, 'index'])->name('santri.index');
         Route::get('/santri/qrcode/{qrCode}', [SantriController::class, 'showQRCode'])->name('santri.qrcode');
         Route::get('/qr-image/{filename}', [SantriController::class, 'getQRImage'])->name('santri.qr-image');
+    });
+
+    // Santri Management Routes - admin only (create, edit, delete)
+    // NOTE: These routes must come BEFORE /santri/{santri} to avoid conflict
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/santri/create', [SantriController::class, 'create'])->name('santri.create');
+        Route::post('/santri', [SantriController::class, 'store'])->name('santri.store');
+        Route::get('/santri/{santri}/edit', [SantriController::class, 'edit'])->name('santri.edit');
+        Route::put('/santri/{santri}', [SantriController::class, 'update'])->name('santri.update');
+        Route::delete('/santri/{santri}', [SantriController::class, 'destroy'])->name('santri.destroy');
         
         // Export & Import Routes
         Route::get('/santri-export', [\App\Http\Controllers\SantriExportController::class, 'export'])->name('santri.export');
@@ -52,6 +62,11 @@ Route::middleware('auth')->group(function () {
         
         // Manajemen Santri (Aktivasi & Pindah Kamar)
         Route::get('/santri-manajemen', [SantriController::class, 'manajemen'])->name('santri.manajemen');
+    });
+
+    // Santri Show - MUST be after /santri/create to avoid conflict
+    Route::middleware('role:admin,pengasuh,pengurus')->group(function () {
+        Route::get('/santri/{santri}', [SantriController::class, 'show'])->name('santri.show');
     });
 
     // Kamar Routes - admin dan pengasuh
@@ -63,6 +78,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::resource('user', UserController::class);
         Route::patch('/user/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('user.toggle-status');
+        
+        // Bulk QR Download - admin only
+        Route::get('/santri-qr-download', [SantriController::class, 'qrDownloadPage'])->name('santri.qr-download');
+        Route::post('/santri-qr-download', [SantriController::class, 'downloadQRCodes'])->name('santri.qr-download.process');
     });
 
     // ========================================
@@ -111,10 +130,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/rekap/{subKegiatan}/{tanggal}', [\App\Http\Controllers\RekapController::class, 'index'])->name('rekap.index');
     Route::post('/rekap/{subKegiatan}/{tanggal}', [\App\Http\Controllers\RekapController::class, 'finalize'])->name('rekap.finalize');
 
-    // Laporan
-    Route::get('/laporan/harian', [\App\Http\Controllers\LaporanController::class, 'harian'])->name('laporan.harian');
-    Route::get('/laporan/bulanan', [\App\Http\Controllers\LaporanController::class, 'bulanan'])->name('laporan.bulanan');
-    Route::get('/laporan/tahunan', [\App\Http\Controllers\LaporanController::class, 'tahunan'])->name('laporan.tahunan');
+    // Laporan - Admin dan Pengasuh only
+    Route::middleware('role:admin,pengasuh')->group(function () {
+        Route::get('/laporan/harian', [\App\Http\Controllers\LaporanController::class, 'harian'])->name('laporan.harian');
+        Route::get('/laporan/bulanan', [\App\Http\Controllers\LaporanController::class, 'bulanan'])->name('laporan.bulanan');
+        Route::get('/laporan/tahunan', [\App\Http\Controllers\LaporanController::class, 'tahunan'])->name('laporan.tahunan');
+    });
 
     // Rekap Approval - Admin only
     Route::middleware('role:admin')->group(function () {
@@ -144,49 +165,14 @@ Route::middleware('auth')->group(function () {
         return view('pages.tables.basic-tables', ['title' => 'Basic Tables']);
     })->name('basic-tables');
 
-    // Laporan PDF Export
-    Route::get('/laporan/harian-pdf', [LaporanController::class, 'exportPdfHarian'])->name('laporan.harian.pdf');
-    Route::get('/laporan/bulanan-pdf', [LaporanController::class, 'exportPdfBulanan'])->name('laporan.bulanan.pdf');
-    Route::get('/laporan/tahunan-pdf', [LaporanController::class, 'exportPdfTahunan'])->name('laporan.tahunan.pdf');
+    // Laporan PDF Export - Admin dan Pengasuh only
+    Route::middleware('role:admin,pengasuh')->group(function () {
+        Route::get('/laporan/harian-pdf', [LaporanController::class, 'exportPdfHarian'])->name('laporan.harian.pdf');
+        Route::get('/laporan/bulanan-pdf', [LaporanController::class, 'exportPdfBulanan'])->name('laporan.bulanan.pdf');
+        Route::get('/laporan/tahunan-pdf', [LaporanController::class, 'exportPdfTahunan'])->name('laporan.tahunan.pdf');
+    });
 
-    // Blank page
-    Route::get('/blank', function () {
-        return view('pages.blank', ['title' => 'Blank']);
-    })->name('blank');
-
-    // Chart pages
-    Route::get('/line-chart', function () {
-        return view('pages.chart.line-chart', ['title' => 'Line Chart']);
-    })->name('line-chart');
-
-    Route::get('/bar-chart', function () {
-        return view('pages.chart.bar-chart', ['title' => 'Bar Chart']);
-    })->name('bar-chart');
-
-    // UI elements pages
-    Route::get('/alerts', function () {
-        return view('pages.ui-elements.alerts', ['title' => 'Alerts']);
-    })->name('alerts');
-
-    Route::get('/avatars', function () {
-        return view('pages.ui-elements.avatars', ['title' => 'Avatars']);
-    })->name('avatars');
-
-    Route::get('/badge', function () {
-        return view('pages.ui-elements.badges', ['title' => 'Badges']);
-    })->name('badges');
-
-    Route::get('/buttons', function () {
-        return view('pages.ui-elements.buttons', ['title' => 'Buttons']);
-    })->name('buttons');
-
-    Route::get('/image', function () {
-        return view('pages.ui-elements.images', ['title' => 'Images']);
-    })->name('images');
-
-    Route::get('/videos', function () {
-        return view('pages.ui-elements.videos', ['title' => 'Videos']);
-    })->name('videos');
+    // NOTE: Demo routes removed for security (charts, UI elements, blank page, etc.)
 });
 
 // Error pages (public)
@@ -194,7 +180,5 @@ Route::get('/error-404', function () {
     return view('pages.errors.error-404', ['title' => 'Error 404']);
 })->name('error-404');
 
-// Signup page (untuk referensi, tidak digunakan)
-Route::get('/signup', function () {
-    return view('pages.auth.signup', ['title' => 'Sign Up']);
-})->name('signup');
+
+// NOTE: Signup route removed for security

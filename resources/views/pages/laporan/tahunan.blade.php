@@ -56,7 +56,54 @@
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Ranking Kehadiran</h3>
                 </div>
-                <div class="overflow-x-auto">
+
+                <!-- Mobile Card View -->
+                <div class="block sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse ($santriStats as $index => $stat)
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-bold text-gray-600 dark:text-gray-300">{{ $index + 1 }}</span>
+                                    <div class="min-w-0">
+                                        <p class="font-medium text-gray-900 dark:text-white truncate">{{ $stat['santri']->nama ?? '-' }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $stat['santri']->kamar->nama_kamar ?? '-' }}</p>
+                                    </div>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded-full 
+                                    {{ $stat['persentase'] >= 90 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                    {{ $stat['persentase'] >= 75 && $stat['persentase'] < 90 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
+                                    {{ $stat['persentase'] < 75 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}">
+                                    {{ $stat['persentase'] }}%
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-2 mt-3">
+                                <div class="text-center p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
+                                    <p class="text-sm font-bold text-green-600 dark:text-green-400">{{ $stat['hadir'] }}</p>
+                                    <p class="text-xs text-green-600/80 dark:text-green-400/80">Hadir</p>
+                                </div>
+                                <div class="text-center p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                    <p class="text-sm font-bold text-blue-600 dark:text-blue-400">{{ $stat['izin'] }}</p>
+                                    <p class="text-xs text-blue-600/80 dark:text-blue-400/80">Izin</p>
+                                </div>
+                                <div class="text-center p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+                                    <p class="text-sm font-bold text-yellow-600 dark:text-yellow-400">{{ $stat['sakit'] }}</p>
+                                    <p class="text-xs text-yellow-600/80 dark:text-yellow-400/80">Sakit</p>
+                                </div>
+                                <div class="text-center p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+                                    <p class="text-sm font-bold text-red-600 dark:text-red-400">{{ $stat['alfa'] }}</p>
+                                    <p class="text-xs text-red-600/80 dark:text-red-400/80">Alfa</p>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">
+                            <p>Tidak ada data</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Desktop Table View -->
+                <div class="hidden sm:block overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">

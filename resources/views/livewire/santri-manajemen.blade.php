@@ -18,7 +18,7 @@
 
     <!-- Filters & Bulk Actions -->
     <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-5 lg:gap-4">
             <!-- Search -->
             <div>
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cari Nama</label>
@@ -72,9 +72,95 @@
         </div>
     </div>
 
-    <!-- Data Table -->
+    <!-- Data Table/Cards -->
     <div class="mt-4 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        <div class="overflow-x-auto">
+        
+        <!-- Mobile Card View -->
+        <div class="block sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            <!-- Select All on Mobile -->
+            <div class="p-3 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <input type="checkbox" wire:model.live="selectAll" 
+                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
+                    Pilih Semua
+                </label>
+                <span class="text-xs text-gray-500">{{ count($selectedSantris) }} dipilih</span>
+            </div>
+
+            @forelse ($santris as $santri)
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-white/[0.02]" wire:key="santri-mobile-{{ $santri->id }}">
+                    <div class="flex items-start gap-3">
+                        <!-- Checkbox -->
+                        <input type="checkbox" wire:model.live="selectedSantris" value="{{ $santri->id }}"
+                            class="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
+                        
+                        <!-- Photo & Name -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-2">
+                                @php $foto = $santri->foto ?? $santri->user->foto ?? null; @endphp
+                                @if ($foto)
+                                    <img src="{{ asset('storage/asset_santri/foto/' . $foto) }}" alt="Foto" class="w-10 h-10 rounded-full object-cover">
+                                @else
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-sm font-semibold">
+                                        {{ strtoupper(substr($santri->user->nama ?? 'N', 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-medium text-gray-900 dark:text-white truncate">{{ $santri->user->nama ?? '-' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $santri->user->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Kamar Badge -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full {{ $santri->kamar ? ($santri->kamar->jenis === 'putra' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400') : 'bg-gray-100 text-gray-700' }}">
+                                    {{ $santri->kamar->nama_kamar ?? 'Tidak ada' }}
+                                </span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex items-center justify-between gap-3">
+                                <!-- Status Toggle -->
+                                <div class="flex items-center gap-2">
+                                    <button wire:click="toggleAktif({{ $santri->id }})"
+                                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 {{ $santri->user->aktif ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {{ $santri->user->aktif ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                                    </button>
+                                    <span class="text-xs {{ $santri->user->aktif ? 'text-green-600' : 'text-gray-500' }}">
+                                        {{ $santri->user->aktif ? 'Aktif' : 'Nonaktif' }}
+                                    </span>
+                                </div>
+
+                                <!-- Pindah Kamar -->
+                                <div class="flex items-center gap-2" x-data="{ targetId: '' }">
+                                    <select x-model="targetId"
+                                        class="flex-1 h-8 rounded border border-gray-300 bg-white px-2 text-xs focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                                        <option value="">Pindah ke...</option>
+                                        @foreach ($kamars as $kamar)
+                                            @if ($kamar->id !== $santri->kamar_id)
+                                                <option value="{{ $kamar->id }}">{{ $kamar->nama_kamar }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                    <button @click="$wire.pindahKamarSingle({{ $santri->id }}, targetId)"
+                                        :disabled="!targetId"
+                                        class="px-2 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                    Tidak ada data santri
+                </div>
+            @endforelse
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full">
                 <thead class="border-b border-gray-200 dark:border-gray-700">
                     <tr>
@@ -83,9 +169,9 @@
                                 class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700">
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Nama</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Kamar</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hidden md:table-cell">Kamar</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Status</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Pindah Kamar</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hidden lg:table-cell">Pindah Kamar</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -111,7 +197,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 hidden md:table-cell">
                                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full {{ $santri->kamar ? ($santri->kamar->jenis === 'putra' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400') : 'bg-gray-100 text-gray-700' }}">
                                     {{ $santri->kamar->nama_kamar ?? 'Tidak ada' }}
                                 </span>
@@ -125,7 +211,7 @@
                                     {{ $santri->user->aktif ? 'Aktif' : 'Nonaktif' }}
                                 </p>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 hidden lg:table-cell">
                                 <div class="flex items-center justify-center gap-2" x-data="{ targetId: '' }">
                                     <select x-model="targetId"
                                         class="w-32 h-8 rounded border border-gray-300 bg-white px-2 text-xs focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">

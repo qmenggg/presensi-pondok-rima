@@ -89,9 +89,9 @@
                             $kamars = collect($rekapData)->pluck('santri.kamar')->unique('id')->filter()->sortBy('nama_kamar');
                         @endphp
                         @foreach($kamars as $kamar)
-                            <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <label class="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-xs sm:text-sm">
                                 <input type="checkbox" class="kamar-checkbox rounded" value="{{ $kamar->nama_kamar }}" checked onchange="filterByKamar()">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ $kamar->nama_kamar }}</span>
+                                <span class="text-gray-700 dark:text-gray-300">{{ $kamar->nama_kamar }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -105,15 +105,67 @@
             <form action="{{ route('rekap.finalize', [$subKegiatan->id, $tanggal]) }}" method="POST">
                 @csrf
                 
-                <div class="overflow-x-auto">
+                <!-- Mobile Card View -->
+                <div class="block sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse ($rekapData as $index => $data)
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50" data-kamar="{{ $data['santri']->kamar->nama_kamar ?? '' }}">
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-gray-900 dark:text-white truncate">
+                                        {{ $data['santri']->nama }}
+                                        @if(isset($data['pending']) && $data['pending'])
+                                            <span class="ml-1 inline-flex items-center px-1.5 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                                Pending
+                                            </span>
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $data['santri']->kamar->nama_kamar ?? '-' }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                @if($canEdit)
+                                    <select name="santri_status[{{ $data['santri']->id }}]" 
+                                        class="flex-1 rounded-lg border text-sm px-3 py-2
+                                            {{ $data['status'] == 'hadir' ? 'border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                            {{ $data['status'] == 'izin' ? 'border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
+                                            {{ $data['status'] == 'sakit' ? 'border-yellow-300 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
+                                            {{ $data['status'] == 'alfa' ? 'border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}
+                                        ">
+                                        <option value="hadir" {{ $data['status'] == 'hadir' ? 'selected' : '' }}>Hadir</option>
+                                        <option value="izin" {{ $data['status'] == 'izin' ? 'selected' : '' }}>Izin</option>
+                                        <option value="sakit" {{ $data['status'] == 'sakit' ? 'selected' : '' }}>Sakit</option>
+                                        <option value="alfa" {{ $data['status'] == 'alfa' ? 'selected' : '' }}>Alfa</option>
+                                    </select>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full 
+                                        {{ $data['status'] == 'hadir' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : '' }}
+                                        {{ $data['status'] == 'izin' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : '' }}
+                                        {{ $data['status'] == 'sakit' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : '' }}
+                                        {{ $data['status'] == 'alfa' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : '' }}
+                                    ">
+                                        {{ ucfirst($data['status']) }}
+                                    </span>
+                                @endif
+                                @if($data['keterangan'])
+                                    <span class="text-xs text-gray-500">{{ $data['keterangan'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-gray-500">Tidak ada peserta</div>
+                    @endforelse
+                </div>
+
+                <!-- Desktop Table View -->
+                <div class="hidden sm:block overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                                 <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 w-12">No</th>
                                 <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Nama</th>
-                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Kamar</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 hidden md:table-cell">Kamar</th>
                                 <th class="px-4 py-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300 w-40">Status</th>
-                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Keterangan</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300 hidden lg:table-cell">Keterangan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -128,7 +180,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $data['santri']->kamar->nama_kamar ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">{{ $data['santri']->kamar->nama_kamar ?? '-' }}</td>
                                     <td class="px-4 py-3">
                                         @if($canEdit)
                                             <select name="santri_status[{{ $data['santri']->id }}]" 
@@ -154,7 +206,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 hidden lg:table-cell">
                                         {{ $data['keterangan'] ?? '-' }}
                                     </td>
                                 </tr>
@@ -169,7 +221,7 @@
 
                 @if($canEdit)
                     <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                        <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -200,14 +252,26 @@
         function filterByKamar() {
             const checkboxes = document.querySelectorAll('.kamar-checkbox:checked');
             const selectedKamars = Array.from(checkboxes).map(cb => cb.value.toLowerCase());
-            const rows = document.querySelectorAll('tbody tr[data-kamar]');
             
+            // Filter table rows (desktop)
+            const rows = document.querySelectorAll('tbody tr[data-kamar]');
             rows.forEach(row => {
                 const kamar = row.getAttribute('data-kamar').toLowerCase();
                 if (selectedKamars.length === 0 || selectedKamars.includes(kamar)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
+                }
+            });
+
+            // Filter mobile cards
+            const cards = document.querySelectorAll('.block.sm\\:hidden > div[data-kamar]');
+            cards.forEach(card => {
+                const kamar = card.getAttribute('data-kamar').toLowerCase();
+                if (selectedKamars.length === 0 || selectedKamars.includes(kamar)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
                 }
             });
         }
