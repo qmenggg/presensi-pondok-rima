@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/absensi/{subKegiatan}/form', \App\Livewire\AbsensiScanner::class)->name('absensi.create');
     // Route::post('/absensi/{subKegiatan}', [AbsensiController::class, 'store'])->name('absensi.store'); // Disabled manual store for now
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
+    Route::post('/absensi/{subKegiatan}/toggle-libur', [AbsensiController::class, 'toggleLibur'])->name('absensi.toggle-libur');
 
     // Santri Routes - Read access for admin, pengasuh, pengurus
     Route::middleware('role:admin,pengasuh,pengurus')->group(function () {

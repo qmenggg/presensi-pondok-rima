@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Absensi;
 use App\Models\Izin;
+use App\Models\Libur;
 use App\Models\SubKegiatan;
+use App\Models\SubKegiatanLibur;
 use App\Models\Santri;
 use App\Models\Tapel;
 use Illuminate\Console\Command;
@@ -54,6 +56,13 @@ class AutoFinalizeRekapCommand extends Command
             return 0;
         }
         
+        // Check if global holiday
+        $liburGlobal = Libur::isLibur($date, 'semua');
+        if ($liburGlobal) {
+            $this->info("Today is a global holiday: {$liburGlobal->keterangan}. Skipping auto-finalize.");
+            return 0;
+        }
+        
         // Get sub kegiatan for the day
         $query = SubKegiatan::with(['kegiatan', 'subKegiatanKamars', 'subKegiatanSantris'])
             ->whereHas('kegiatan', function($q) use ($tapelAktif) {
@@ -83,6 +92,13 @@ class AutoFinalizeRekapCommand extends Command
         
         foreach ($subKegiatans as $subKegiatan) {
             $this->line("Processing: {$subKegiatan->nama_sub_kegiatan}");
+            
+            // Check if this sub kegiatan is on holiday
+            $liburKegiatan = SubKegiatanLibur::isLibur($subKegiatan->id, $date);
+            if ($liburKegiatan) {
+                $this->line("  -> Skipped (kegiatan libur: {$liburKegiatan->keterangan})");
+                continue;
+            }
             
             // Get all peserta santri
             $pesertaIds = $this->getPesertaSantriIds($subKegiatan);

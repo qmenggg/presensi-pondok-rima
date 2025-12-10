@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use App\Models\SubKegiatan;
+use App\Models\SubKegiatanLibur;
+use App\Models\Libur;
 use App\Models\Santri;
 use App\Models\Kamar;
 use Illuminate\Http\Request;
@@ -23,6 +25,9 @@ class AbsensiController extends Controller
         // Get active Tapel
         $tapelAktif = \App\Models\Tapel::getAktif();
         
+        // Check for global holiday
+        $liburGlobal = Libur::isLibur($tanggal, 'semua');
+        
         // If no active Tapel, show empty
         if (!$tapelAktif) {
             return view('pages.absensi.index', [
@@ -31,6 +36,7 @@ class AbsensiController extends Controller
                 'tanggal' => $tanggal,
                 'hariIni' => $hariIni,
                 'tapelAktif' => null,
+                'liburGlobal' => $liburGlobal,
                 'noTapelMessage' => 'Tidak ada tahun pelajaran aktif. Silakan aktifkan tahun pelajaran terlebih dahulu.',
             ]);
         }
@@ -63,12 +69,15 @@ class AbsensiController extends Controller
 
         $subKegiatans = $query->orderBy('waktu_mulai', 'asc')->get();
 
-        // Count absensis for each sub kegiatan
+        // Count absensis and check holiday status for each sub kegiatan
         foreach ($subKegiatans as $sub) {
             $sub->absensi_count = Absensi::where('sub_kegiatan_id', $sub->id)
                 ->where('tanggal', $tanggal)
                 ->count();
             $sub->peserta_count = $this->getPesertaCount($sub);
+            
+            // Check if this sub kegiatan is marked as holiday
+            $sub->is_libur = SubKegiatanLibur::isLibur($sub->id, $tanggal) !== null;
         }
 
         return view('pages.absensi.index', [
@@ -77,6 +86,7 @@ class AbsensiController extends Controller
             'tanggal' => $tanggal,
             'hariIni' => $hariIni,
             'tapelAktif' => $tapelAktif,
+            'liburGlobal' => $liburGlobal,
         ]);
     }
 
@@ -164,7 +174,30 @@ class AbsensiController extends Controller
         }
 
         // ============================================
-        // VALIDASI 3: Cek Waktu Kegiatan (dengan toleransi)
+        // VALIDASI 3: Cek Libur Global
+        // ============================================
+        $jenisSantri = $subKegiatan->untuk_jenis_santri === 'campur' ? 'semua' : $subKegiatan->untuk_jenis_santri;
+        $liburGlobal = Libur::isLibur(Carbon::today(), $jenisSantri);
+        if ($liburGlobal) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Hari ini libur: ' . ($liburGlobal->keterangan ?? 'Libur')
+            ], 400);
+        }
+
+        // ============================================
+        // VALIDASI 4: Cek Libur Sub Kegiatan
+        // ============================================
+        $liburKegiatan = SubKegiatanLibur::isLibur($subKegiatan->id, Carbon::today());
+        if ($liburKegiatan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kegiatan ini diliburkan: ' . ($liburKegiatan->keterangan ?? 'Libur')
+            ], 400);
+        }
+
+        // ============================================
+        // VALIDASI 5: Cek Waktu Kegiatan (dengan toleransi)
         // ============================================
         $now = Carbon::now();
         $waktuMulai = Carbon::parse($subKegiatan->waktu_mulai);
@@ -341,5 +374,50 @@ class AbsensiController extends Controller
             ->count();
 
         return $santriFromKamarCount + $santriFromIndividualCount;
+    }
+
+    /**
+     * Toggle holiday status for a sub kegiatan on a specific date.
+     */
+    public function toggleLibur(SubKegiatan $subKegiatan, Request $request)
+    {
+        // Only admin can toggle holiday
+        if (auth()->user()->role !== 'admin') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Hanya admin yang dapat mengubah status libur.'
+            ], 403);
+        }
+
+        $tanggal = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
+        $keterangan = $request->get('keterangan', 'Libur kegiatan');
+
+        // Check if already marked as holiday
+        $existing = SubKegiatanLibur::where('sub_kegiatan_id', $subKegiatan->id)
+            ->where('tanggal', $tanggal)
+            ->first();
+
+        if ($existing) {
+            // Remove holiday
+            $existing->delete();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Kegiatan diaktifkan kembali.',
+                'is_libur' => false
+            ]);
+        } else {
+            // Add holiday
+            SubKegiatanLibur::create([
+                'sub_kegiatan_id' => $subKegiatan->id,
+                'tanggal' => $tanggal,
+                'keterangan' => $keterangan,
+                'created_by' => auth()->id(),
+            ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Kegiatan ditandai libur.',
+                'is_libur' => true
+            ]);
+        }
     }
 }

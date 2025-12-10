@@ -151,20 +151,140 @@
                         </div>
                     </div>
 
-                    <!-- Guru Penanggung Jawab (Select2) -->
-                    <div>
-                        <label for="guru_penanggung_jawab" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <!-- Guru Penanggung Jawab (Searchable Dropdown with Keyboard Navigation) -->
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        highlightIndex: 0,
+                        selected: {{ old('guru_penanggung_jawab', $subKegiatan?->guru_penanggung_jawab) ?? 'null' }},
+                        selectedName: '{{ old('guru_penanggung_jawab', $subKegiatan?->guru_penanggung_jawab) ? addslashes($gurus->firstWhere('id', old('guru_penanggung_jawab', $subKegiatan?->guru_penanggung_jawab))?->nama) : '' }}',
+                        gurus: [
+                            @foreach($gurus as $guru)
+                            { id: {{ $guru->id }}, nama: '{{ addslashes($guru->nama) }}' },
+                            @endforeach
+                        ],
+                        get filteredGurus() {
+                            if (!this.search || this.search.trim() === '') return this.gurus;
+                            const searchLower = this.search.toLowerCase().trim();
+                            return this.gurus.filter(g => g.nama.toLowerCase().includes(searchLower));
+                        },
+                        selectGuru(guru) {
+                            this.selected = guru.id;
+                            this.selectedName = guru.nama;
+                            this.search = '';
+                            this.open = false;
+                            this.$refs.searchInput.blur();
+                        },
+                        clearSelection() {
+                            this.selected = null;
+                            this.selectedName = '';
+                            this.search = '';
+                        },
+                        selectHighlighted() {
+                            if (this.filteredGurus.length > 0 && this.highlightIndex >= 0) {
+                                this.selectGuru(this.filteredGurus[this.highlightIndex]);
+                            }
+                        },
+                        moveUp() {
+                            if (this.highlightIndex > 0) {
+                                this.highlightIndex--;
+                                this.scrollToHighlighted();
+                            }
+                        },
+                        moveDown() {
+                            if (this.highlightIndex < this.filteredGurus.length - 1) {
+                                this.highlightIndex++;
+                                this.scrollToHighlighted();
+                            }
+                        },
+                        scrollToHighlighted() {
+                            this.$nextTick(() => {
+                                const container = this.$refs.dropdown;
+                                const highlighted = container?.querySelector('[data-highlighted=true]');
+                                if (highlighted) {
+                                    highlighted.scrollIntoView({ block: 'nearest' });
+                                }
+                            });
+                        },
+                        openDropdown() {
+                            this.open = true;
+                            this.search = '';
+                            this.highlightIndex = 0;
+                        }
+                    }" class="relative" @keydown.escape="open = false">
+                        <label for="guru_search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Guru Penanggung Jawab <span class="text-gray-400 text-xs">(opsional)</span>
                         </label>
-                        <select id="guru_penanggung_jawab" name="guru_penanggung_jawab"
-                            class="guru-select w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90 dark:focus:border-primary-500">
-                            <option value="">Pilih Guru (ketik untuk mencari)</option>
-                            @foreach ($gurus as $guru)
-                                <option value="{{ $guru->id }}" {{ old('guru_penanggung_jawab', $subKegiatan ? $subKegiatan->guru_penanggung_jawab : '') == $guru->id ? 'selected' : '' }}>
-                                    {{ $guru->nama }}
-                                </option>
-                            @endforeach
-                        </select>
+                        
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" name="guru_penanggung_jawab" :value="selected">
+                        
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="guru_search"
+                                x-ref="searchInput"
+                                x-model="search"
+                                @focus="openDropdown()"
+                                @click="openDropdown()"
+                                @input="open = true; highlightIndex = 0"
+                                @keydown.arrow-down.prevent="moveDown()"
+                                @keydown.arrow-up.prevent="moveUp()"
+                                @keydown.enter.prevent="selectHighlighted()"
+                                :placeholder="selected ? selectedName : 'Ketik untuk mencari guru...'"
+                                autocomplete="off"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 pr-16 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90">
+                            
+                            <!-- Selected display when not searching -->
+                            <div x-show="!open && selected && !search" 
+                                 @click="openDropdown(); $refs.searchInput.focus()"
+                                 class="absolute inset-0 flex items-center px-4 cursor-pointer">
+                                <span class="text-sm text-gray-800 dark:text-white" x-text="selectedName"></span>
+                            </div>
+                            
+                            <!-- Clear button -->
+                            <button type="button" x-show="selected" @click="clearSelection()" class="absolute inset-y-0 right-8 flex items-center px-2 text-gray-400 hover:text-gray-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Dropdown icon -->
+                            <button type="button" @click="open ? (open = false) : openDropdown()" class="absolute inset-y-0 right-0 flex items-center px-3">
+                                <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Dropdown options -->
+                        <div x-show="open" 
+                             x-transition
+                             x-ref="dropdown"
+                             @click.away="open = false"
+                             class="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                            <template x-if="filteredGurus.length === 0">
+                                <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                    Tidak ditemukan
+                                </div>
+                            </template>
+                            <template x-for="(guru, index) in filteredGurus" :key="guru.id">
+                                <button type="button"
+                                        @click="selectGuru(guru)"
+                                        @mouseenter="highlightIndex = index"
+                                        :data-highlighted="highlightIndex === index"
+                                        class="w-full px-4 py-2.5 text-left text-sm transition-colors"
+                                        :class="{
+                                            'bg-blue-100 dark:bg-blue-900/50': highlightIndex === index,
+                                            'bg-blue-50 dark:bg-blue-900/30': selected === guru.id && highlightIndex !== index,
+                                            'hover:bg-gray-100 dark:hover:bg-gray-700': highlightIndex !== index
+                                        }">
+                                    <span x-text="guru.nama" class="font-medium text-gray-800 dark:text-white"></span>
+                                </button>
+                            </template>
+                        </div>
+                        
                         @error('guru_penanggung_jawab')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -198,31 +318,7 @@
 @endsection
 
 @push('styles')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
-        .select2-container--default .select2-selection--single {
-            height: 42px !important;
-            border-radius: 0.5rem !important;
-            border-color: #d1d5db !important;
-            padding: 6px 8px !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 28px !important;
-            color: #1f2937 !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 40px !important;
-        }
-        .dark .select2-container--default .select2-selection--single {
-            background-color: #1f2937 !important;
-            border-color: #374151 !important;
-        }
-        .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: rgba(255,255,255,0.9) !important;
-        }
-        .select2-dropdown {
-            border-radius: 0.5rem !important;
-        }
         .hari-checkbox:has(input:checked) {
             border-color: #3b82f6;
             background-color: #eff6ff;
@@ -234,43 +330,38 @@
 @endpush
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Initialize Select2 for guru
-            $('.guru-select').select2({
-                placeholder: 'Pilih Guru (ketik untuk mencari)',
-                allowClear: true,
-                width: '100%',
-            });
-
+        document.addEventListener('DOMContentLoaded', function() {
             // Select all hari
-            $('#select-all-hari').click(function() {
-                $('input[name="haris[]"]').prop('checked', true).trigger('change');
+            document.getElementById('select-all-hari')?.addEventListener('click', function() {
+                document.querySelectorAll('input[name="haris[]"]').forEach(cb => {
+                    cb.checked = true;
+                });
                 updateHariStyles();
             });
 
             // Clear all hari
-            $('#clear-all-hari').click(function() {
-                $('input[name="haris[]"]').prop('checked', false).trigger('change');
+            document.getElementById('clear-all-hari')?.addEventListener('click', function() {
+                document.querySelectorAll('input[name="haris[]"]').forEach(cb => {
+                    cb.checked = false;
+                });
                 updateHariStyles();
             });
 
             // Update styles on checkbox change
-            $('input[name="haris[]"]').change(function() {
-                updateHariStyles();
+            document.querySelectorAll('input[name="haris[]"]').forEach(cb => {
+                cb.addEventListener('change', updateHariStyles);
             });
 
             function updateHariStyles() {
-                $('.hari-checkbox').each(function() {
-                    const checkbox = $(this).find('input[type="checkbox"]');
-                    if (checkbox.is(':checked')) {
-                        $(this).addClass('border-primary-500 bg-primary-50 dark:bg-primary-900/30')
-                               .removeClass('border-gray-300 dark:border-gray-700');
+                document.querySelectorAll('.hari-checkbox').forEach(label => {
+                    const checkbox = label.querySelector('input[type="checkbox"]');
+                    if (checkbox.checked) {
+                        label.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/30');
+                        label.classList.remove('border-gray-300', 'dark:border-gray-700');
                     } else {
-                        $(this).removeClass('border-primary-500 bg-primary-50 dark:bg-primary-900/30')
-                               .addClass('border-gray-300 dark:border-gray-700');
+                        label.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/30');
+                        label.classList.add('border-gray-300', 'dark:border-gray-700');
                     }
                 });
             }

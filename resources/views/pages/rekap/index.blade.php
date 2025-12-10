@@ -19,7 +19,7 @@
             </a>
         </div>
 
-        {{-- Libur Banner --}}
+        {{-- Libur Banner (Global) --}}
         @if($libur)
             <div class="rounded-lg bg-yellow-50 border-l-4 border-yellow-400 p-4 dark:bg-yellow-900/20">
                 <div class="flex">
@@ -29,6 +29,21 @@
                     <div class="ml-3">
                         <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Hari Libur: {{ $libur->keterangan }}</p>
                         <p class="text-xs text-yellow-700 dark:text-yellow-400 mt-1">Jenis: {{ ucfirst($libur->jenis) }} | Untuk: {{ ucfirst($libur->untuk_jenis_santri) }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+        
+        {{-- Libur Banner (Per Sub Kegiatan) --}}
+        @if(isset($liburKegiatan) && $liburKegiatan)
+            <div class="rounded-lg bg-orange-50 border-l-4 border-orange-400 p-4 dark:bg-orange-900/20">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-orange-800 dark:text-orange-300">Kegiatan Diliburkan: {{ $liburKegiatan->keterangan ?? 'Libur' }}</p>
+                        <p class="text-xs text-orange-700 dark:text-orange-400 mt-0.5">Edit rekap tidak tersedia saat kegiatan libur.</p>
                     </div>
                 </div>
             </div>

@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use App\Models\Absensi;
+use App\Models\Libur;
 use App\Models\Santri;
 use App\Models\SubKegiatan;
+use App\Models\SubKegiatanLibur;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -73,7 +75,24 @@ class AbsensiScanner extends Component
         }
 
         // ============================================
-        // VALIDASI 3: Cek Waktu Kegiatan (dengan toleransi)
+        // VALIDASI 3: Cek Libur Global
+        // ============================================
+        $jenisSantri = $subKegiatan->untuk_jenis_santri === 'campur' ? 'semua' : $subKegiatan->untuk_jenis_santri;
+        $liburGlobal = Libur::isLibur(Carbon::today(), $jenisSantri);
+        if ($liburGlobal) {
+            return $this->setFeedback('error', 'Hari ini libur: ' . ($liburGlobal->keterangan ?? 'Libur'));
+        }
+
+        // ============================================
+        // VALIDASI 4: Cek Libur Sub Kegiatan
+        // ============================================
+        $liburKegiatan = SubKegiatanLibur::isLibur($subKegiatan->id, Carbon::today());
+        if ($liburKegiatan) {
+            return $this->setFeedback('error', 'Kegiatan ini diliburkan: ' . ($liburKegiatan->keterangan ?? 'Libur'));
+        }
+
+        // ============================================
+        // VALIDASI 5: Cek Waktu Kegiatan (dengan toleransi)
         // ============================================
         $now = Carbon::now();
         $waktuMulai = Carbon::parse($subKegiatan->waktu_mulai);

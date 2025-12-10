@@ -59,19 +59,24 @@
     @mouseenter="if (!$store.sidebar.isExpanded) $store.sidebar.setHovered(true)"
     @mouseleave="$store.sidebar.setHovered(false)">
     <!-- Logo Section -->
-    <div class="pt-8 pb-7 flex"
+    <div class="pt-6 pb-5 flex border-b border-gray-200 dark:border-gray-800 mb-6"
         :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
         'xl:justify-center' :
         'justify-start'">
-        <a href="/">
-            <img x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
-                class="dark:hidden" src="/images/logo/logo.svg" alt="Logo" width="150" height="40" />
-            <img x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
-                class="hidden dark:block" src="/images/logo/logo-dark.svg" alt="Logo" width="150"
-                height="40" />
-            <img x-show="!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen"
-                src="/images/logo/logo-icon.svg" alt="Logo" width="32" height="32" />
-
+        <a href="/" class="flex items-center gap-3">
+            {{-- Logo icon (selalu tampil) --}}
+            <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRAA" 
+                 class="w-14 h-14 object-contain" />
+            
+            {{-- Teks SIPRAA (hanya tampil saat expanded) --}}
+            <div x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 class="flex flex-col">
+                <span class="text-xl font-bold text-gray-800 dark:text-white leading-tight">SIPRAA</span>
+                <span class="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">Sistem Informasi Presensi Rima Al Amin</span>
+            </div>
         </a>
     </div>
 

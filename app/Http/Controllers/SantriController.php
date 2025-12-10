@@ -507,6 +507,8 @@ class SantriController extends Controller
      */
     public function qrDownloadPage()
     {
+        $this->requirePermission('santri.write');
+        
         $kamarPutra = Kamar::where('jenis', 'putra')
             ->withCount(['santris' => function($q) {
                 $q->whereNotNull('qr_code_file')
@@ -535,6 +537,8 @@ class SantriController extends Controller
      */
     public function downloadQRCodes(Request $request)
     {
+        $this->requirePermission('santri.write');
+        
         $validated = $request->validate([
             'kamar_ids' => 'required|array|min:1',
             'kamar_ids.*' => 'exists:kamars,id',

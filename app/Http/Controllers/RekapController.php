@@ -7,6 +7,7 @@ use App\Models\AbsensiLog;
 use App\Models\Izin;
 use App\Models\Libur;
 use App\Models\SubKegiatan;
+use App\Models\SubKegiatanLibur;
 use App\Models\Santri;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -25,11 +26,14 @@ class RekapController extends Controller
         $user = auth()->user();
         $tanggalCarbon = Carbon::parse($tanggal);
         
-        // Check if today is holiday
+        // Check if today is holiday (global)
         $libur = Libur::isLibur($tanggal);
         
-        // Determine if user can edit
-        $canEdit = $this->canEditRekap();
+        // Check if this sub_kegiatan is marked as holiday
+        $liburKegiatan = SubKegiatanLibur::isLibur($subKegiatan->id, $tanggal);
+        
+        // Determine if user can edit (disabled if on holiday)
+        $canEdit = $this->canEditRekap() && !$libur && !$liburKegiatan;
         
         // Get all peserta santri
         $peserta = $this->getPesertaSantri($subKegiatan);
@@ -88,6 +92,7 @@ class RekapController extends Controller
             'rekapData' => $rekapData,
             'stats' => $stats,
             'libur' => $libur,
+            'liburKegiatan' => $liburKegiatan,
             'canEdit' => $canEdit,
         ]);
     }
@@ -104,6 +109,18 @@ class RekapController extends Controller
         // Pengasuh cannot edit
         if (!$this->canEditRekap()) {
             return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengedit rekap.');
+        }
+        
+        // Check if global holiday
+        $libur = Libur::isLibur($tanggal);
+        if ($libur) {
+            return redirect()->back()->with('error', 'Tidak dapat mengedit rekap pada hari libur.');
+        }
+        
+        // Check if sub_kegiatan is on holiday
+        $liburKegiatan = SubKegiatanLibur::isLibur($subKegiatan->id, $tanggal);
+        if ($liburKegiatan) {
+            return redirect()->back()->with('error', 'Kegiatan ini sedang diliburkan.');
         }
 
         $validated = $request->validate([

@@ -76,6 +76,14 @@ class SubKegiatan extends Model
     }
 
     /**
+     * Get the liburs (holidays) for the sub kegiatan.
+     */
+    public function liburs(): HasMany
+    {
+        return $this->hasMany(SubKegiatanLibur::class);
+    }
+
+    /**
      * Get hari names as array.
      */
     public function getHariArrayAttribute(): array
