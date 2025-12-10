@@ -23,6 +23,17 @@
     <!-- Hide x-cloak elements until Alpine loads -->
     <style>[x-cloak] { display: none !important; }</style>
 
+    <!-- Fix for Date Picker in Chrome -->
+    <style>
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            display: block !important;
+            opacity: 1 !important;
+            background-color: transparent;
+            cursor: pointer;
+        }
+    </style>
+
     <!-- Theme Store -->
     <script>
         document.addEventListener('alpine:init', () => {

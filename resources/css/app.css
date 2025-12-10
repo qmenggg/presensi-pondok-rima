@@ -303,14 +303,14 @@
   background-color: #344054;
 }
 @layer utilities {
-  /* For Remove Date Icon */
-  input[type='date']::-webkit-inner-spin-button,
+  /* For Remove Date Icon - Commented out to fix popup issue */
+  /* input[type='date']::-webkit-inner-spin-button,
   input[type='time']::-webkit-inner-spin-button,
   input[type='date']::-webkit-calendar-picker-indicator,
   input[type='time']::-webkit-calendar-picker-indicator {
     display: none;
     -webkit-appearance: none;
-  }
+  } */
 }
 
 .sidebar:hover {

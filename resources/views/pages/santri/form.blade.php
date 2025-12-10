@@ -407,6 +407,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Listen for changes
     jenisKelaminSelect.addEventListener('change', filterKamars);
+
+    // Helper for date inputs to show picker on click
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.addEventListener('click', function() {
+            if (typeof this.showPicker === 'function') {
+                this.showPicker();
+            }
+        });
+        input.addEventListener('focus', function() {
+            if (typeof this.showPicker === 'function') {
+                this.showPicker();
+            }
+        });
+    });
 });
 </script>
 @endpush
