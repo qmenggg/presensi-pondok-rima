@@ -161,7 +161,7 @@ class SantriController extends Controller
 
         try {
             // Auto-generate username if empty
-            $username = $validated['username'];
+            $username = $validated['username'] ?? null;
             if (empty($username)) {
                 $namaParts = explode(' ', trim($validated['nama']));
                 $namaDepan = strtolower($namaParts[0] ?? 'santri');
