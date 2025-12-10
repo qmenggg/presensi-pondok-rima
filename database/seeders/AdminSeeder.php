@@ -13,61 +13,40 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create default admin if not exists
-        if (!User::where('username', 'admin')->exists()) {
-            User::create([
+        // Create sample users
+        $users = [
+            [
                 'username' => 'admin',
                 'password' => Hash::make('password123'),
                 'nama' => 'Administrator',
                 'jenis_kelamin' => 'L',
                 'role' => 'admin',
                 'aktif' => true,
-            ]);
-            $this->command->info('Admin user created: admin / password123');
-        } else {
-            $this->command->info('Admin user already exists, skipping...');
-        }
-
-        // Create sample users for each role (optional - for testing)
-        $sampleUsers = [
-            [
-                'username' => 'pengasuh1',
-                'nama' => 'Ulil ALbab Muhubbi',
-                'jenis_kelamin' => 'L',
-                'role' => 'pengasuh',
             ],
             [
                 'username' => 'pengasuh1',
-                'nama' => 'Ulil ALbab Muhubbi',
+                'password' => Hash::make('password123'),
+                'nama' => 'KH. Ulil Albab S.Ag M.Si',
                 'jenis_kelamin' => 'L',
                 'role' => 'pengasuh',
+                'aktif' => true,
             ],
             [
-                'username' => 'pengurus1',
-                'nama' => 'Pengurus',
+                'username' => 'pengasuh2',
+                'password' => Hash::make('password123'),
+                'nama' => 'Hj. Isma Rodliyati S.Ag',
                 'jenis_kelamin' => 'P',
-                'role' => 'pengurus',
-            ],
-            [
-                'username' => 'asatid1',
-                'nama' => 'Ustadz Mahmud',
-                'jenis_kelamin' => 'L',
-                'role' => 'asatid',
+                'role' => 'pengasuh',
+                'aktif' => true,
             ],
         ];
 
-        foreach ($sampleUsers as $userData) {
-            if (!User::where('username', $userData['username'])->exists()) {
-                User::create([
-                    'username' => $userData['username'],
-                    'password' => Hash::make('password123'),
-                    'nama' => $userData['nama'],
-                    'jenis_kelamin' => $userData['jenis_kelamin'],
-                    'role' => $userData['role'],
-                    'aktif' => true,
-                ]);
-                $this->command->info("Created user: {$userData['username']} / password123");
-            }
+        foreach ($users as $userData) {
+            User::updateOrCreate(
+                ['username' => $userData['username']],
+                $userData
+            );
+            $this->command->info("User processed: {$userData['username']}");
         }
     }
 }
