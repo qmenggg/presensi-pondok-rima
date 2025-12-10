@@ -13,6 +13,8 @@ use Illuminate\Support\Str;
 use BaconQrCode\Renderer\GDLibRenderer;
 use BaconQrCode\Writer;
 use Illuminate\Support\Facades\Log;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class SantriController extends Controller
 {
@@ -200,7 +202,17 @@ class SantriController extends Controller
                 $foto = $request->file('foto');
                 // Create filename with user id to prevent overwrite
                 $fotoName = Str::slug($validated['nama']) . '-' . $user->id . '.' . $foto->extension();
-                $foto->storeAs('asset_santri/foto', $fotoName, 'public');
+                
+                // Resize and Save using Intervention Image
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($foto);
+                $image->scale(width: 400); // Scale to width 400px
+                
+                $destinationPath = storage_path('app/public/asset_santri/foto');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                $image->save($destinationPath . '/' . $fotoName);
 
                 // Update user with foto filename
                 $user->foto = $fotoName;
@@ -352,7 +364,17 @@ class SantriController extends Controller
                 $foto = $request->file('foto');
                 // Create filename with user id to prevent overwrite
                 $fotoName = Str::slug($validated['nama']) . '-' . $santri->user_id . '.' . $foto->extension();
-                $foto->storeAs('asset_santri/foto', $fotoName, 'public');
+                
+                // Resize and Save using Intervention Image
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($foto);
+                $image->scale(width: 400);
+                
+                $destinationPath = storage_path('app/public/asset_santri/foto');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                $image->save($destinationPath . '/' . $fotoName);
             }
             // Scenario 2: No new photo, but Name Changed -> Rename existing photo
             elseif ($nameChanged && $santri->foto) {

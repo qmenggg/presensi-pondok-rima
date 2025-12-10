@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class UserController extends Controller
 {
@@ -81,13 +83,17 @@ class UserController extends Controller
                 $foto = $request->file('foto');
                 $fotoName = Str::slug($validated['nama']) . '-' . time() . '.' . $foto->extension();
                 
-                // Ensure directory exists
+                // Resize and Save using Intervention Image
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($foto);
+                $image->scale(width: 400); // Scale to width 400px
+                
                 $fotoFolder = storage_path('app/public/asset_user/foto');
                 if (!file_exists($fotoFolder)) {
                     mkdir($fotoFolder, 0777, true);
                 }
+                $image->save($fotoFolder . '/' . $fotoName);
                 
-                $foto->storeAs('asset_user/foto', $fotoName, 'public');
                 $userData['foto'] = $fotoName;
             }
 
@@ -193,12 +199,17 @@ class UserController extends Controller
                 $foto = $request->file('foto');
                 $fotoName = Str::slug($validated['nama']) . '-' . time() . '.' . $foto->extension();
                 
+                // Resize and Save using Intervention Image
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($foto);
+                $image->scale(width: 400); // Scale to width 400px
+                
                 $fotoFolder = storage_path('app/public/asset_user/foto');
                 if (!file_exists($fotoFolder)) {
                     mkdir($fotoFolder, 0777, true);
                 }
-                
-                $foto->storeAs('asset_user/foto', $fotoName, 'public');
+                $image->save($fotoFolder . '/' . $fotoName);
+
                 $userData['foto'] = $fotoName;
             }
 
