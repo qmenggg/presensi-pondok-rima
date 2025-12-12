@@ -27,7 +27,7 @@ class KamarSeeder extends Seeder
             ['nama_kamar' => 'Al-Husna', 'jenis' => 'putri'],
             ['nama_kamar' => 'Az-Zahra', 'jenis' => 'putri'],
             ['nama_kamar' => "Al-Ma'la", 'jenis' => 'putri'],
-            ['nama_kamar' => 'Tahfidz', 'jenis' => 'putri'],
+            ['nama_kamar' => 'Tahfidz Putri', 'jenis' => 'putri'],
         ];
 
         foreach ($kamars as $kamar) {
