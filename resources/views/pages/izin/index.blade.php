@@ -8,6 +8,7 @@
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">Izin Santri</h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola izin dan sakit santri</p>
             </div>
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('izin.create') }}"
                class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,6 +16,7 @@
                 </svg>
                 <span>Tambah</span>
             </a>
+            @endif
         </div>
 
         {{-- Flash Messages --}}

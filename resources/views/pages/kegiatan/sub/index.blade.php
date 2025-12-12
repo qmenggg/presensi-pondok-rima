@@ -15,6 +15,7 @@
                 <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">Sub Kegiatan</h2>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('sub-kegiatan.create', $kegiatan->id) }}"
                    class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,6 +23,7 @@
                     </svg>
                     <span class="hidden sm:inline">Tambah</span>
                 </a>
+                @endif
                 <a href="{{ route('kegiatan.index') }}"
                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,6 +99,7 @@
                                     <span class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">{{ $santriCount }} santri</span>
                                 </div>
                             </div>
+                            @if(auth()->user()->role === 'admin')
                             <div class="flex flex-col gap-1">
                                 <a href="{{ route('sub-kegiatan.assign', [$kegiatan->id, $sub->id]) }}" class="p-1.5 text-green-600 bg-green-50 rounded-lg dark:bg-green-900/20">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,6 +121,7 @@
                                     </button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -185,6 +189,7 @@
                                         <span class="px-2 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">{{ $santriCount }}</span>
                                     </div>
                                 </td>
+                                @if(auth()->user()->role === 'admin')
                                 <td class="px-3 py-3">
                                     <div class="flex items-center justify-center gap-1">
                                         <a href="{{ route('sub-kegiatan.assign', [$kegiatan->id, $sub->id]) }}" class="p-1.5 text-green-600 hover:bg-green-50 dark:text-green-400 rounded-lg" title="Assign">
@@ -208,6 +213,9 @@
                                         </form>
                                     </div>
                                 </td>
+                                @else
+                                <td class="px-3 py-3 text-center text-gray-400">-</td>
+                                @endif
                             </tr>
                         @empty
                             <tr>
