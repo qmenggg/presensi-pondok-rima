@@ -9,6 +9,7 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola data santri pondok pesantren</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                @if(auth()->user()->role === 'admin')
                 <!-- Export Button -->
                 <a href="{{ route('santri.export') }}"
                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors">
@@ -25,6 +26,7 @@
                     </svg>
                     Tambah Santri
                 </a>
+                @endif
             </div>
         </div>
 

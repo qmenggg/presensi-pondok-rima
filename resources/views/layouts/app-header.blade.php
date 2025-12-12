@@ -49,9 +49,12 @@
             </button>
 
             <!-- Logo (mobile only) -->
-            <a href="/" class="xl:hidden">
-                <img class="dark:hidden" src="/images/logo/logo.svg" alt="Logo" />
-                <img class="hidden dark:block" src="/images/logo/logo-dark.svg" alt="Logo" />
+            <a href="/" class="xl:hidden flex items-center gap-2">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRAA" class="w-8 h-8 object-contain" />
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold text-gray-800 dark:text-white leading-tight">SIPRAA</span>
+                    <span class="text-[6px] text-gray-500 dark:text-gray-400 leading-tight">Sistem Informasi Presensi Rima Al Amin</span>
+                </div>
             </a>
 
             <!-- Application Menu Toggle (mobile only) -->

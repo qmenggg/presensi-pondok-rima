@@ -8,6 +8,7 @@
                 <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90">Kegiatan</h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola kegiatan pondok</p>
             </div>
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('kegiatan.create') }}"
                class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 flex-shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,6 +16,7 @@
                 </svg>
                 <span class="hidden sm:inline">Tambah</span>
             </a>
+            @endif
         </div>
 
         {{-- Flash Messages --}}
@@ -73,6 +75,7 @@
                                     </a>
                                 </div>
                             </div>
+                            @if(auth()->user()->role === 'admin')
                             <div class="flex items-center gap-1 ml-2">
                                 <a href="{{ route('sub-kegiatan.index', $kegiatan->id) }}" class="p-2 text-gray-600 rounded-lg">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,6 +97,7 @@
                                     </button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -134,6 +138,7 @@
                                         {{ $kegiatan->subKegiatans->count() }}
                                     </a>
                                 </td>
+                                @if(auth()->user()->role === 'admin')
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-center gap-1">
                                         <a href="{{ route('sub-kegiatan.index', $kegiatan->id) }}" class="p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 rounded-lg" title="Sub Kegiatan">
@@ -157,6 +162,9 @@
                                         </form>
                                     </div>
                                 </td>
+                                @else
+                                <td class="px-4 py-3 text-center text-gray-400">-</td>
+                                @endif
                             </tr>
                         @empty
                             <tr>

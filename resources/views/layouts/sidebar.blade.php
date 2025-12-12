@@ -66,7 +66,7 @@
         <a href="/" class="flex items-center gap-3">
             {{-- Logo icon (selalu tampil) --}}
             <img src="{{ asset('images/logo.png') }}" alt="Logo SIPRAA" 
-                 class="w-14 h-14 object-contain" />
+                 class="w-12 h-12 object-contain" />
             
             {{-- Teks SIPRAA (hanya tampil saat expanded) --}}
             <div x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"

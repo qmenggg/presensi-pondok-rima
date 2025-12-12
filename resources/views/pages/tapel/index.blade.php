@@ -8,6 +8,7 @@
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">Tahun Pelajaran</h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola tahun pelajaran pondok</p>
             </div>
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('tapel.create') }}"
                class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,6 +16,7 @@
                 </svg>
                 <span>Tambah</span>
             </a>
+            @endif
         </div>
 
         {{-- Flash Messages --}}
@@ -71,6 +73,7 @@
                                     </span>
                                 </div>
                             </div>
+                            @if(auth()->user()->role === 'admin')
                             <div class="flex items-center gap-1 ml-2">
                                 <a href="{{ route('tapel.edit', $tapel->id) }}" class="p-2 text-blue-600 rounded-lg">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,6 +90,7 @@
                                     </button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -134,6 +138,7 @@
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ $tapel->kegiatans_count }}</span>
                                 </td>
+                                @if(auth()->user()->role === 'admin')
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-center gap-1">
                                         <a href="{{ route('tapel.edit', $tapel->id) }}" class="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 rounded-lg">
@@ -152,6 +157,9 @@
                                         </form>
                                     </div>
                                 </td>
+                                @else
+                                <td class="px-4 py-3 text-center text-gray-400">-</td>
+                                @endif
                             </tr>
                         @empty
                             <tr>

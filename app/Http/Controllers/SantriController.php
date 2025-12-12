@@ -85,6 +85,10 @@ class SantriController extends Controller
                     return '<span class="text-xs text-gray-400 dark:text-gray-500 italic">Belum digenerate</span>';
                 })
                 ->addColumn('action', function ($santri) {
+                    $isAdmin = auth()->user()->role === 'admin';
+                    if (!$isAdmin) {
+                        return '<span class="text-gray-400 dark:text-gray-500 text-xs">-</span>';
+                    }
                     return '<div class="flex items-center gap-1">
                             <a href="' . route('santri.edit', $santri->id) . '"
                                class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
